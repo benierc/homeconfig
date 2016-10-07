@@ -229,4 +229,6 @@ nnoremap <leader>j }
 nnoremap <leader>n :tabprev<CR>
 nnoremap <leader>; :tabnext<CR>
 nnoremap <leader>t :NERDTree<CR>
+nnoremap <silent> <F2> :TlistToggle<CR>
+nnoremap <silent> <F3> :TlistAddFiles *.cpp *.h<CR>
 set colorcolumn=80
