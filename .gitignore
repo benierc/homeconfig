@@ -1,0 +1,13 @@
+*
+!.gitignore
+!.gitmodules
+!.bashrc
+!.vimrc
+!.vim
+!.vim/colors
+!.vim/bundle/Vundle.vim
+!.vim/doc
+!.vim/plugin
+!.vim/spell
+!.vim/syntax
+
