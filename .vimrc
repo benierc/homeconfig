@@ -116,13 +116,20 @@ Bundle 'L9'
 Bundle 'taglist.vim'
 Bundle 'FuzzyFinder'
 Bundle 'OmniCppComplete'
-Bundle 'Valloric/YouCompleteMe'
+"Bundle 'Valloric/YouCompleteMe'
 Bundle 'scrooloose/nerdtree'
+Bundle 'Command-T'
+Bundle 'The-NERD-tree'
 " non github repos
 "Bundle 'git://git.wincent.com/command-t.git'
 " ...
 
+let Tlist_Ctags_Cmd = '/usr/bin/ctags'
+filetype on
+
+
 filetype plugin indent on " required!
+set omnifunc=syntaxcomplete#Complete
 "
 " Brief help
 " :BundleList - list configured bundles
