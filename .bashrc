@@ -215,3 +215,7 @@ function restore_gcc5 {
     yaourt -U gcc-libs-multilib-5.3.0-5-x86_64.pkg.tar.xz gcc-multilib-5.3.0-5-x86_64.pkg.tar.xz lib32-gcc-libs-5.3.0-5-x86_64.pkg.tar.xz
     popd
 }
+
+function updatelistpackages {
+    yaourt -Qq > archpackagesinstalled
+}
