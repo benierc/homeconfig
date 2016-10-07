@@ -10,4 +10,7 @@
 !.vim/plugin
 !.vim/spell
 !.vim/syntax
+!.irssi/
+!.irssi/**
+
 

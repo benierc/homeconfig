@@ -1,0 +1,7 @@
+load xmpp
+script load nickcolor
+script load window_switcher
+script load auto_whois
+wait 4000
+script load keepnick; wait 4000
+keepnick clement
