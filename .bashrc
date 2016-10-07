@@ -10,9 +10,11 @@
 xset -b
 
 # Bash completion
-if [ -f /etc/bash_completion.d/git-completion.bash ]; then
-    source /etc/bash_completion.d/git-completion.bash
-    source /etc/bash_completion.d/git-prompt.sh
+if [ -f ~/.myscripts/bash_completion.d/git-completion.bash ]; then
+    source ~/.myscripts/bash_completion.d/git-completion.bash
+    source ~/.myscripts/bash_completion.d/git-prompt.sh
+else
+    echo "cannot load bash_completion.d scripts"
 fi
 
 alias ls='ls --color=auto'

@@ -12,5 +12,7 @@
 !.vim/syntax
 !.irssi/
 !.irssi/**
+!.myscripts/
+!.myscripts/**
 
 
