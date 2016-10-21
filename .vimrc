@@ -210,14 +210,14 @@ autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 nnoremap <leader>$  :'<,'>s/$/                                                 /e<CR>
 
 ""desactiver les touches
-map <DOWN> <Esc>
-map <UP> <Esc>
-map <LEFT> <Esc>
-map <RIGHT> <Esc>
-imap <DOWN> <Esc>
-imap <UP> <Esc>
-imap <LEFT> <Esc>
-imap <RIGHT> <Esc>
+"map <DOWN> <Esc>
+"map <UP> <Esc>
+"map <LEFT> <Esc>
+"map <RIGHT> <Esc>
+"imap <DOWN> <Esc>
+"imap <UP> <Esc>
+"imap <LEFT> <Esc>
+"imap <RIGHT> <Esc>
 ""space into _
 nnoremap <leader>_ :s/<SPACE>/_/g<CR> /zz<CR>
 
