@@ -8,6 +8,7 @@
 
 #NO BEEP
 xset -b
+setxkbmap fr
 
 myscripts_dir=$HOME/.myscripts
 
@@ -18,6 +19,8 @@ if [ -f $myscripts_dir/bash_completion.d/git-completion.bash ]; then
 else
     echo "cannot load bash_completion.d scripts"
 fi
+
+complete -cf sudo
 
 alias ls='ls --color=auto'
 #default
@@ -47,7 +50,7 @@ export PS1="${BLUE}[$TIME]${RED}${GREEN}[${USER} ${YELLOW}${NAME}${COLOR_OFF}${B
 source $myscripts_dir/vte.sh
 PROMPT_COMMAND=__vte_prompt_command
 
-sh $HOME/.screenlayout/classic.sh
+#sh $HOME/.screenlayout/classic.sh
 
 #completion sudo
 
@@ -64,8 +67,7 @@ function formatpatch {
 
 #official export
 export EDITOR=vim
-export MANPAGER="`which most`"
-export PATH=$PATH:/home/clement/scriptbin/bin:/home/clement/bin
+export PATH=$PATH:/usr/bin/core_perl/
 export HISTTIMEFORMAT='%F %T  '
 export HISTCONTROL=ignoredups
 export export HISTSIZE=9999999999999999999
@@ -169,6 +171,7 @@ function getiphost {
     ip_route=10.1.4.162
     iphost=$(host ${machine} ${ip_route} | awk '$3="address" {print $4}')
     iphost=$(echo $iphost)
+    echo $iphost
 }
 
 function nlab {
@@ -213,9 +216,59 @@ function restore_gcc5 {
     pushd .
     cd /var/cache/pacman/pkg
     yaourt -U gcc-libs-multilib-5.3.0-5-x86_64.pkg.tar.xz gcc-multilib-5.3.0-5-x86_64.pkg.tar.xz lib32-gcc-libs-5.3.0-5-x86_64.pkg.tar.xz
+    yaourt -U binutils-2.26-3-x86_64.pkg.tar.xz
+    yaourt -U glibc-2.23-4-x86_64.pkg.tar.xz lib32-glibc-2.23-4-x86_64.pkg.tar.xz valgrind-3.11.0-3-x86_64.pkg.tar.xz
     popd
 }
 
 function updatelistpackages {
     yaourt -Qq > archpackagesinstalled
 }
+
+alias ipcontainer='sudo ip link set eno1 netns $(sudo lxc-info -pHn nexter -P /home/clement/containers) name eno1'
+alias nexterlxc='sudo lxc-start -n nexter -P /home/clement/containers -d'
+alias nexterattach='sudo lxc-attach -n nexter -P /home/clement/containers --clear-env -- su clement && cd'
+alias nexterstop='sudo lxc-stop -n nexter -P /home/clement/containers'
+alias nexterconsole='sudo lxc-console -n nexter -P /home/clement/containers -t 0'
+alias gonexterhome='cd /home/clement/containers/nexter/rootfs/home/clement'
+function lxcnetworkset {
+    sudo ip link add name lxcbr0 type bridge
+    sudo ip address add 192.168.150.1/24 dev lxcbr0
+    sudo ip link set lxcbr0  up
+    sudo iptables -t nat -A POSTROUTING -o eno1 -j MASQUERADE
+    sudo bash -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+}
+
+function lxcnetworkhelp {
+    echo "*********1. Arrêter le container************"
+    echo "#lxc-stop --name TOTO"
+    echo
+    echo "*********2. Editer le fichier /var/lib/lxc/TOTO et remplacer "lxc.network.type = none" par*******"
+    echo "lxc.network.type = veth"
+    echo "lxc.network.flags = up"
+    echo "lxc.network.link = lxcbr0"
+    echo "lxc.network.name = eno1"
+    echo "lxc.network.hwaddr = 00:19:77:41:22:1f"
+    echo "lxc.network.mtu = 1500"
+    echo
+    echo "****************3. Créer un bridge sur l'hôte.*****************"
+    echo "# ip link add name lxcbr0 type bridge"
+    echo "# ip address add 192.168.150.1/24 dev lxcbr0"
+    echo "# ip link set lxcbr0  up"
+    echo
+    echo "4. Activer la redirection IP"
+    echo "# iptables -t nat -A POSTROUTING -o eno1 -j MASQUERADE"
+    echo "# echo 1 >/proc/sys/net/ipv4/ip_forward"
+    echo
+    echo "*************5. Démarrer le container**************"
+    echo "# lxc-start --name TOTO"
+    echo
+    echo "**************6.  Configurer le container********************"
+    echo "# lxc-attach --name TOTO"
+    echo "# ip address add 192.168.150.2/24 dev eno1"
+    echo "# ip route add 192.168.150.0/24 dev eno1"
+    echo "# ip route add default via 192.168.150.1"
+}
+
+#help
+alias helpgitarchive='echo i"git archive --format=tar.gz nexter-v3.1.0 > traitair-trt_nexter-v3.1.0.tar.gz"'
