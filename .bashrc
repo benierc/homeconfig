@@ -59,6 +59,7 @@ alias l='ls'
 alias ll='ls -lh'
 alias lla='ll -a'
 alias vi='vim'
+alias resdir='cd && cd -'
 function formatpatch {
     if [ "$1" ]; then
         git format-patch -M -n -s -o $1 origin/master
@@ -235,8 +236,13 @@ function lxcnetworkset {
     sudo ip link add name lxcbr0 type bridge
     sudo ip address add 192.168.150.1/24 dev lxcbr0
     sudo ip link set lxcbr0  up
-    sudo iptables -t nat -A POSTROUTING -o eno1 -j MASQUERADE
+    sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     sudo bash -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+    xhost +inet:192.168.150.2
+}
+
+function lxcssh {
+    ssh -X clement@192.168.150.2
 }
 
 function lxcnetworkhelp {
@@ -270,5 +276,27 @@ function lxcnetworkhelp {
     echo "# ip route add default via 192.168.150.1"
 }
 
+function vpnSmile()
+{
+    cd $HOME/vpnSmile
+    sudo openvpn cleben.client
+    cd -
+}
+
+#git command
+alias gitonelog="git log --pretty=oneline --max-count=1"
+function gitlastlogdirs {
+    dirs=$(ls .)
+    commit=
+    for dir in $dirs; do
+        if [ -d $dir ]; then
+            cd $dir
+            log="$dir:$(git log --pretty=oneline --max-count=1)"
+            commits="$commits\n$log"
+            cd -
+        fi
+    done
+    echo -e $commits
+}
 #help
 alias helpgitarchive='echo i"git archive --format=tar.gz nexter-v3.1.0 > traitair-trt_nexter-v3.1.0.tar.gz"'
