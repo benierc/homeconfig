@@ -233,10 +233,12 @@ alias nexterstop='sudo lxc-stop -n nexter -P /home/clement/containers'
 alias nexterconsole='sudo lxc-console -n nexter -P /home/clement/containers -t 0'
 alias gonexterhome='cd /home/clement/containers/nexter/rootfs/home/clement'
 function lxcnetworkset {
+    braddr=192.168.150.1
     sudo ip link add name lxcbr0 type bridge
-    sudo ip address add 192.168.150.1/24 dev lxcbr0
+    sudo ip address add $braddr/24 dev lxcbr0
     sudo ip link set lxcbr0  up
     sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
     sudo bash -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
     xhost +inet:192.168.150.2
 }
