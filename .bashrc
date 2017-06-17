@@ -226,6 +226,7 @@ function updatelistpackages {
     yaourt -Qq > archpackagesinstalled
 }
 
+<<<<<<< HEAD
 alias ipcontainer='sudo ip link set eno1 netns $(sudo lxc-info -pHn nexter -P /home/clement/containers) name eno1'
 alias nexterlxc='sudo lxc-start -n nexter -P /home/clement/containers -d'
 alias nexterattach='sudo lxc-attach -n nexter -P /home/clement/containers --clear-env -- su clement && cd'
@@ -302,3 +303,8 @@ function gitlastlogdirs {
 }
 #help
 alias helpgitarchive='echo i"git archive --format=tar.gz nexter-v3.1.0 > traitair-trt_nexter-v3.1.0.tar.gz"'
+function updateall {
+    yaourt -Syu
+    sudo cp /boot/initramfs-linux.img /boot/efi
+    sudo cp /boot/vmlinuz-linux /boot/efi
+}
