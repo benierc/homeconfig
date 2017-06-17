@@ -226,7 +226,6 @@ function updatelistpackages {
     yaourt -Qq > archpackagesinstalled
 }
 
-<<<<<<< HEAD
 alias ipcontainer='sudo ip link set eno1 netns $(sudo lxc-info -pHn nexter -P /home/clement/containers) name eno1'
 alias nexterlxc='sudo lxc-start -n nexter -P /home/clement/containers -d'
 alias nexterattach='sudo lxc-attach -n nexter -P /home/clement/containers --clear-env -- su clement && cd'
