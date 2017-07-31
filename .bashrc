@@ -50,7 +50,9 @@ export PS1="${BLUE}[$TIME]${RED}${GREEN}[${USER} ${YELLOW}${NAME}${COLOR_OFF}${B
 source $myscripts_dir/vte.sh
 PROMPT_COMMAND=__vte_prompt_command
 
-#sh $HOME/.screenlayout/classic.sh
+if [ -e $HOME/.screenlayout/classic.sh ]; then
+    sh $HOME/.screenlayout/classic.sh
+fi
 
 #completion sudo
 
