@@ -210,11 +210,6 @@ function ipkcopy {
     scp $1 root@10.9.18.209:~
 }
 
-alias gcc='gcc-5'
-alias gcc-ar='gcc-ar-5'
-alias gcc-nm='gcc-nm5'
-alias gcc-ranlib='gcc-ranlib-5'
-
 function restore_gcc5 {
     pushd .
     cd /var/cache/pacman/pkg
