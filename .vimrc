@@ -183,6 +183,8 @@ set  cursorline
 set t_Co=256
 colorscheme mustang
 
+set autoread
+
 let mapleader = ","
 
 map <silent> <F7> "<Esc>:silent setlocal spell! spelllang=en <CR>"
@@ -232,4 +234,5 @@ nnoremap <leader>t :NERDTree<CR>
 nnoremap <silent> <F2> :TlistToggle<CR>
 nnoremap <silent> <F3> :TlistAddFiles *.cpp *.h<CR>
 nnoremap <leader>maj :%s/.*/m\u& = "&";<CR>
+nnoremap <leader>e :bufdo e<CR>
 set colorcolumn=80
