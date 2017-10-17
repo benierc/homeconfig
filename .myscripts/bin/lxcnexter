@@ -1,0 +1,54 @@
+#!/bin/bash
+
+alias ipcontainer='sudo ip link set eno1 netns $(sudo lxc-info -pHn nexter -P /home/clement/containers) name eno1'
+alias lxcnexter='sudo lxc-start -n nexter -P /home/clement/containers -d'
+alias lxcnexterattach='sudo lxc-attach -n nexter -P /home/clement/containers --clear-env -- su clement && cd'
+alias lxcnexterstop='sudo lxc-stop -n nexter -P /home/clement/containers'
+alias lxcnexterconsole='sudo lxc-console -n nexter -P /home/clement/containers -t 0'
+alias gonexterhome='cd /home/clement/containers/nexter/rootfs/home/clement'
+
+function lxcnetworkset {
+    braddr=192.168.150.1
+    sudo ip link add name lxcbr0 type bridge
+    sudo ip address add $braddr/24 dev lxcbr0
+    sudo ip link set lxcbr0  up
+    sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
+    sudo bash -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+    xhost +inet:192.168.150.2
+}
+
+function lxcssh {
+    ssh -X clement@192.168.150.2
+}
+
+function lxcnetworkhelp {
+    echo "*********1. Arrêter le container************"
+    echo "#lxc-stop --name TOTO"
+    echo
+    echo "*********2. Editer le fichier /var/lib/lxc/TOTO et remplacer "lxc.network.type = none" par*******"
+    echo "lxc.network.type = veth"
+    echo "lxc.network.flags = up"
+    echo "lxc.network.link = lxcbr0"
+    echo "lxc.network.name = eno1"
+    echo "lxc.network.hwaddr = 00:19:77:41:22:1f"
+    echo "lxc.network.mtu = 1500"
+    echo
+    echo "****************3. Créer un bridge sur l'hôte.*****************"
+    echo "# ip link add name lxcbr0 type bridge"
+    echo "# ip address add 192.168.150.1/24 dev lxcbr0"
+    echo "# ip link set lxcbr0  up"
+    echo
+    echo "4. Activer la redirection IP"
+    echo "# iptables -t nat -A POSTROUTING -o eno1 -j MASQUERADE"
+    echo "# echo 1 >/proc/sys/net/ipv4/ip_forward"
+    echo
+    echo "*************5. Démarrer le container**************"
+    echo "# lxc-start --name TOTO"
+    echo
+    echo "**************6.  Configurer le container********************"
+    echo "# lxc-attach --name TOTO"
+    echo "# ip address add 192.168.150.2/24 dev eno1"
+    echo "# ip route add 192.168.150.0/24 dev eno1"
+    echo "# ip route add default via 192.168.150.1"
+}
