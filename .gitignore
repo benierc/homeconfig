@@ -8,6 +8,7 @@
 !.vim/bundle/Vundle.vim
 !.vim/doc
 !.vim/plugin
+!.vim/plugin/*
 !.vim/spell
 !.vim/syntax
 !.irssi/

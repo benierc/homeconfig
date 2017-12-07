@@ -127,6 +127,7 @@ Bundle 'The-NERD-tree'
 let Tlist_Ctags_Cmd = '/usr/bin/ctags'
 filetype on
 
+Plugin 'crucerucalin/qml.vim'
 
 filetype plugin indent on " required!
 set omnifunc=syntaxcomplete#Complete
