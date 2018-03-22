@@ -46,7 +46,7 @@ export GIT_PS1_SHOWUNTRACKEDFILES=
 export GIT_PS1_SHOWUPSTREAM= #auto #verbose name legacy git svn
 export GIT_PS1_DESCRIBE_STYLE= #contains branch describe default
 
-export PS1="${BLUE}[$TIME]${RED}${GREEN}[${USER} ${YELLOW}${NAME}${COLOR_OFF}${BLUE}${COLOR_OFF}${GREEN}]${RED}"'$(__git_ps1 "(%s)")'"${GREEN}${PROMPT_CHARACTER}${COLOR_OFF}${KK}"
+export PS1="${WHITE}[debian]${BLUE}[$TIME]${RED}${GREEN}[${USER} ${YELLOW}${NAME}${COLOR_OFF}${BLUE}${COLOR_OFF}${GREEN}]${RED}"'$(__git_ps1 "(%s)")'"${GREEN}${PROMPT_CHARACTER}${COLOR_OFF}${KK}"
 source $myscripts_dir/vte.sh
 PROMPT_COMMAND=__vte_prompt_command
 
