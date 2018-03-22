@@ -15,13 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Not bash or zsh?
-[ -n "$BASH_VERSION" -o -n "$ZSH_VERSION" ] || return 0
+#[ -n "$BASH_VERSION" -o -n "$ZSH_VERSION" ] || return 0
 
 # Not an interactive shell?
-[[ $- == *i* ]] || return 0
+#[[ $- == *i* ]] || return 0
 
 # Not running under vte?
-[ "${VTE_VERSION:-0}" -ge 3405 ] || return 0
+#[ "${VTE_VERSION:-0}" -ge 3405 ] || return 0
 
 __vte_urlencode() (
   # This is important to make sure string manipulation is handled
