@@ -120,6 +120,7 @@ Bundle 'Valloric/YouCompleteMe'
 Bundle 'scrooloose/nerdtree'
 Bundle 'Command-T'
 Bundle 'The-NERD-tree'
+Bundle 'gabrielelana/vim-markdown'
 " non github repos
 "Bundle 'git://git.wincent.com/command-t.git'
 " ...
