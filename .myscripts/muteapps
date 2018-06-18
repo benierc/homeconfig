@@ -1,0 +1,23 @@
+#!/bin/bash
+
+REGEX="ALSA.Playback Firefox"
+
+function mute {
+    echo ".... $indexes"
+    for index in $indexes; do
+        echo "$reg ## $index"
+        pacmd set-sink-input-mute $index $muted
+    done
+}
+
+function main {
+    for reg in $REGEX; do
+        pacmd list-sink-inputs | grep -B 20 "$reg" | grep "muted: yes"
+        muted=$?
+        indexes=$(pacmd list-sink-inputs | egrep -B 20 "$reg" | grep index | sed "s/.*index: //")
+        echo "----- $indexes ------"
+        mute
+    done
+}
+
+main

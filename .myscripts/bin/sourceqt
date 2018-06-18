@@ -2,7 +2,7 @@
 
 function qtsource
 {
-    export QTDIR=$HOME/Qt/5.6/gcc_64/
+    export QTDIR=/opt/Qt/5.11.0/gcc_64/
     export PATH=$QTDIR/bin/:$PATH
     export LD_LIBRARY_PATH=$QTDIR/lib/:$LD_LIBRARY_PATH
     export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig/:$PKG_CONFIG_PATH
