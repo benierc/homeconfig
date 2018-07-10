@@ -9,3 +9,5 @@
     gpgsign = true
 [gitreview]
 	username = benierc
+[i18n]
+	commitencoding = ISO-8859-1
