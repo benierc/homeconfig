@@ -13,11 +13,13 @@
 !.vim/syntax
 !.irssi/
 !.irssi/**
-!.myscripts/
-!.myscripts/**
+!.myscripts/listssh
+!.myscripts/lxcnexter
+!.myscripts/sourceqt
 !archpackagesinstalled
 !.gitconfig
-!.git/.gitignore
 !.thunderbird/xlvvy5g5.default/ImapMail/imap.gmail.com/msgFilterRules.dat
+!.gitglobal/gitignore
+!.gitglobal/hooks/commit-msg
 
 
