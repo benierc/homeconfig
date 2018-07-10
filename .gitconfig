@@ -1,0 +1,11 @@
+[user]
+	name = Clément Bénier
+	email = clement.benier@iot.bzh
+    signingkey = 96C691655D04865D
+[core]
+	excludesfile = /home/clement/.git/.gitignore
+	hooksPath = /home/clement/.git/hooks/
+[commit]
+    gpgsign = true
+[gitreview]
+	username = benierc

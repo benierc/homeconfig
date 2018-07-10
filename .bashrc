@@ -265,3 +265,11 @@ done
 alias sshdocker='ssh -X -Y -p 2222 devel@linux-bu4u'
 alias sshapache='ssh apache@www.ovh.iot'
 alias sshjenkins='ssh jenkins@jenkins'
+
+function git() {
+    case $1 in
+        clone ) shift 1; command git clone --recurse-submodules "$@";;
+        pull ) shift 1; command git pull --rebase "$@";;
+        * ) command git "$@" ;;
+    esac
+}

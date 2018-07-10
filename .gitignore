@@ -16,5 +16,8 @@
 !.myscripts/
 !.myscripts/**
 !archpackagesinstalled
+!.gitconfig
+!.git/*
+!.git/.gitignore
 
 
