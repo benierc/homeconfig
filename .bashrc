@@ -273,3 +273,5 @@ function git() {
         * ) command git "$@" ;;
     esac
 }
+
+alias jetirc="ssh -t devel@vm-jet-clement 'tmux attach'"
