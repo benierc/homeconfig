@@ -4,10 +4,10 @@
     signingkey = 96C691655D04865D
 [core]
 	excludesfile = /home/clement/.gitglobal/gitignore
-	hooksPath = /home/clement/.gitglobal/hooks/
+    #hooksPath = /home/clement/.gitglobal/hooks/
 [commit]
     gpgsign = true
 [gitreview]
 	username = benierc
-[i18n]
-	commitencoding = ISO-8859-1
+#[i18n]
+    #commitencoding = ISO-8859-1

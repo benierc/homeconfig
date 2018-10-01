@@ -6,6 +6,7 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+
 #NO BEEP
 xset -b
 setxkbmap fr
@@ -40,6 +41,18 @@ COLOR_OFF='\[\e[m\]'
 PROMPT_CHARACTER='\$'
 NAME='\W'
 
+# Limit the size of the ~/.bash_history file
+HISTFILESIZE=90000
+# Avoid duplicate entries
+HISTCONTROL=ignoredups:erasedups
+# append to the history file, don't overwrite it
+shopt -s histappend
+function prprompt() {
+    __vte_prompt_command
+    history -n
+    history -a
+}
+
 export GIT_PS1_SHOWDIRTYSTATE=1
 export GIT_PS1_SHOWSTASHSTATE=
 export GIT_PS1_SHOWUNTRACKEDFILES=
@@ -48,7 +61,7 @@ export GIT_PS1_DESCRIBE_STYLE= #contains branch describe default
 
 export PS1="${BLUE}[$TIME]${RED}${GREEN}[${USER} ${YELLOW}${NAME}${COLOR_OFF}${BLUE}${COLOR_OFF}${GREEN}]${RED}"'$(__git_ps1 "(%s)")'"${GREEN}${PROMPT_CHARACTER}${COLOR_OFF}${KK}"
 source $myscripts_dir/vte.sh
-PROMPT_COMMAND=__vte_prompt_command
+PROMPT_COMMAND=prprompt
 
 if [ -e $HOME/.screenlayout/classic.sh ]; then
     sh $HOME/.screenlayout/classic.sh
@@ -268,10 +281,38 @@ alias sshjenkins='ssh jenkins@jenkins'
 
 function git() {
     case $1 in
-        clone ) shift 1; command git clone --recurse-submodules "$@";;
+        clone ) shift 1; olddirs=$(ls); command git clone --recurse-submodules "$@";
+            newdirs=$(ls); clonedir=$(diff --old-line-format='' --new-line-format='%L'  --unchanged-line-format='' <(echo "$olddirs") <(echo "$newdirs"))
+            cp ~/.myscripts/commit-msg $clonedir/.git/hooks;;
         pull ) shift 1; command git pull --rebase "$@";;
         * ) command git "$@" ;;
     esac
 }
 
-alias jetirc="ssh -t devel@vm-jet-clement 'tmux attach'"
+alias jetirc="ssh -t devel@vm-jet-clement 'tmux attach -t irc'"
+
+export GOPATH=$HOME/go
+export PATH=${PATH}:$GOPATH/bin
+#export GOROOT=$HOME/local/go/install/go1.10.2
+#export PATH=${GOROOT}/bin:${PATH}
+
+function buildcmake {
+    cmakeoptions=$1
+    if [ ! -z $MYPREFIX ]; then
+        cmakeoptions=$MYPREFIX
+    fi
+    currentDir=$(basename $(pwd))
+    if [[ "$currentDir" == "build" ]]; then
+        cd ..
+    fi
+    rm -fr build
+    mkdir build
+    cd build
+    echo "cmake .. $cmakeoptions"
+    cmake .. $cmakeoptions
+    make
+    if [ ! -z $cmakeoptions ]; then
+        make install
+    fi
+}
+
