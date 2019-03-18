@@ -1,0 +1,9 @@
+function git() {
+    case $1 in
+        clone ) shift 1; olddirs=$(ls); command git clone --recurse-submodules "$@";
+            newdirs=$(ls); clonedir=$(diff --old-line-format='' --new-line-format='%L'  --unchanged-line-format='' <(echo "$olddirs") <(echo "$newdirs"))
+            cp ~/.myscripts/commit-msg $clonedir/.git/hooks;;
+        pull ) shift 1; command git pull --rebase "$@";;
+        * ) command git "$@" ;;
+    esac
+}
