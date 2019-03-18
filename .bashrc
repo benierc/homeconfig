@@ -316,3 +316,4 @@ function buildcmake {
     fi
 }
 
+export PATH=$PATH:/home/clement/.gem/ruby/2.6.0/bin
