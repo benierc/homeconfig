@@ -106,8 +106,8 @@ BULLETTRAIN_GIT_COLORIZE_DIRTY=true
 BULLETTRAIN_GIT_COLORIZE_DIRTY_FG_COLOR=white
 BULLETTRAIN_CONTEXT_HOSTNAME=
 
-bindkey ' ^I' autosuggest-accept
-bindkey ' ^M' autosuggest-execute
+bindkey '^I ' autosuggest-accept
+bindkey '^M ' autosuggest-execute
 
 #source append
 zshrcappend=~/.zshrcappend
