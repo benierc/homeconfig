@@ -7,3 +7,9 @@ function git() {
         * ) command git "$@" ;;
     esac
 }
+
+function formatpatch {
+    if [ "$1" ]; then
+        git format-patch -M -n -s -o $1 origin/master
+    fi
+}
