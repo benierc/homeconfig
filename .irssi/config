@@ -2,7 +2,7 @@ servers = (
   { address = "irc.dal.net"; chatnet = "DALnet"; port = "6667"; },
   { address = "irc.efnet.org"; chatnet = "EFNet"; port = "6667"; },
   { address = "irc.esper.net"; chatnet = "EsperNet"; port = "6667"; },
-  {
+  { 
     address = "chat.freenode.net";
     chatnet = "Freenode";
     port = "6667";
@@ -21,14 +21,14 @@ servers = (
   },
   { address = "irc.netfuze.net"; chatnet = "NetFuze"; port = "6667"; },
   { address = "irc.oftc.net"; chatnet = "OFTC"; port = "6667"; },
-  {
+  { 
     address = "irc.quakenet.org";
     chatnet = "QuakeNet";
     port = "6667";
   },
   { address = "irc.rizon.net"; chatnet = "Rizon"; port = "6667"; },
   { address = "silc.silcnet.org"; chatnet = "SILC"; port = "706"; },
-  {
+  { 
     address = "irc.undernet.org";
     chatnet = "Undernet";
     port = "6667";
@@ -39,22 +39,23 @@ servers = (
     port = "6667";
     use_ssl = "no";
     ssl_verify = "no";
-    autoconnect = "yes";
+    autoconnect = "no";
   },
   {
     address = "irc.freenode.net";
-    chatnet = "Freenode";
+    chatnet = "fn";
     port = "7000";
     use_ssl = "yes";
     ssl_verify = "yes";
     ssl_capath = "/etc/ssl/certs";
     autoconnect = "yes";
+    password = "ircowpach";
   },
   {
     address = "jabber.smile.fr";
     chatnet = "smile";
     password = "mndR9cMY";
-    autoconnect = "yes";
+    autoconnect = "no";
   }
 );
 
@@ -65,7 +66,7 @@ chatnets = {
     max_msgs = "20";
     max_whois = "30";
   };
-  EFNet = {
+  EFNet = { 
     type = "IRC";
     max_kicks = "1";
     max_msgs = "4";
@@ -89,7 +90,7 @@ chatnets = {
     max_msgs = "1";
     max_whois = "1";
   };
-  IRCnet = {
+  IRCnet = { 
     type = "IRC";
     max_kicks = "1";
     max_msgs = "1";
@@ -120,7 +121,7 @@ chatnets = {
     max_msgs = "1";
     max_whois = "1";
   };
-  Rizon = {
+  Rizon = { 
     type = "IRC";
     max_kicks = "1";
     max_msgs = "1";
@@ -134,6 +135,11 @@ chatnets = {
     max_whois = "1";
   };
   smile = { type = "XMPP"; nick = "cleben@smile.fr"; };
+  fn = {
+    type = "IRC";
+    nick = "clement";
+    autosendcmd = "/msg nickserv regain clement password; wait 2000; /msg nickserv identify password ;wait 2000";
+  };
 };
 
 channels = (
@@ -146,14 +152,13 @@ channels = (
   { name = "#netfuze"; chatnet = "NetFuze"; autojoin = "No"; },
   { name = "#oftc"; chatnet = "OFTC"; autojoin = "No"; },
   { name = "silc"; chatnet = "SILC"; autojoin = "No"; },
-  { name = "#openwide"; chatnet = "FREENODE"; autojoin = "yes"; },
-  { name = "#freenivi"; chatnet = "FREENODE"; autojoin = "yes"; },
-  { name = "#yocto.fr"; chatnet = "FREENODE"; autojoin = "yes"; },
-  { name = "#yocto"; chatnet = "FREENODE"; autojoin = "yes"; },
-  { name = "#lafp"; chatnet = "FREENODE"; autojoin = "yes"; },
-  { name = "#opendart"; chatnet = "FREENODE"; autojoin = "yes"; }
-  { name = "#automotive"; chatnet = "FREENODE"; autojoin = "yes"; }
-  { name = "#archlinux-fr"; chatnet = "FREENODE"; autojoin = "yes"; }
+  { name = "#openwide"; chatnet = "fn"; autojoin = "yes"; },
+  { name = "#iotbzh"; chatnet = "fn"; autojoin = "yes"; },
+  { name = "#yocto"; chatnet = "fn"; autojoin = "yes"; },
+  { name = "#koji"; chatnet = "fn"; autojoin = "yes"; },
+  { name = "#opendart"; chatnet = "fn"; autojoin = "yes"; },
+  { name = "#archlinux-fr"; chatnet = "fn"; autojoin = "yes"; },
+  { name = "#automotive"; chatnet = "fn"; autojoin = "yes"; }
 );
 
 aliases = {
@@ -428,7 +433,7 @@ windows = {
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#openwide";
-        tag = "Freenode";
+        tag = "fn";
       }
     );
     sticky = "yes";
@@ -438,28 +443,18 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#freenivi";
-        tag = "Freenode";
-      }
-    );
-  };
-  4 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
-        name = "#yocto.fr";
-        tag = "Freenode";
+        name = "#iotbzh";
+        tag = "fn";
       }
     );
   };
   5 = {
     items = (
-      {
+      { 
         type = "CHANNEL";
         chat_type = "IRC";
         name = "#yocto";
-        tag = "Freenode";
+        tag = "fn";
       }
     );
   };
@@ -468,8 +463,8 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#lafp";
-        tag = "Freenode";
+        name = "#opendart";
+        tag = "fn";
       }
     );
   };
@@ -478,29 +473,19 @@ windows = {
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#opendart";
-        tag = "Freenode";
+        name = "#archlinux-fr";
+        tag = "fn";
       }
     );
+    sticky = "yes";
   };
   8 = {
     items = (
       {
         type = "CHANNEL";
         chat_type = "IRC";
-        name = "#archlinux-fr";
-        tag = "Freenode";
-      }
-    );
-    sticky = "yes";
-  };
-  9 = {
-    items = (
-      {
-        type = "CHANNEL";
-        chat_type = "IRC";
         name = "#automotive";
-        tag = "Freenode";
+        tag = "fn";
       }
     );
     sticky = "yes";
