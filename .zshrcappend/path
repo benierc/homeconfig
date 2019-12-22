@@ -1,0 +1,3 @@
+for b in $(find .gem/ruby -maxdepth 2 -name "bin" -type d); do
+    export PATH=$PATH:$HOME/$b
+done

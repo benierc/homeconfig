@@ -1,0 +1,3 @@
+function vimdefaut() {
+    vim -u ~/.defaults.vim $@
+}

@@ -1,0 +1,1 @@
+alias lagrangeirc="ssh -t clement@lagrange.benier.bzh 'tmux attach -t irc'"

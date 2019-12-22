@@ -1,0 +1,40 @@
+function iotpkgclonebuildf28() {
+    cd ~/work/koji/pkgs
+    if [ ! -d $1 ]; then
+        iotpkg clone $1
+    fi
+    cd $1
+    shift
+    git reset --hard
+    git checkout f28
+    echo "iotpkg build --target=rawhide $*"
+    iotpkg build --nowait --target=rawhide $*
+}
+
+function patchgitpkg() {
+    common="$HOME/work/koji/pkgs/common"
+    pushd $common
+    git pull
+    popd
+    pkgname=$(basename $(pwd))
+    pkgcommon=$common/$pkgname
+    if [ ! -d $pkgcommon ]; then
+        mkdir $pkgcommon
+    fi
+    git diff > $pkgcommon/$1
+    pushd $pkgcommon
+    git add $1
+    git commit -s
+    git push
+    popd
+}
+
+export KOJITAGPREFIX="0_RedPesk_HH"
+
+function kojiaddpkg {
+	koji add-pkg ${KOJITAGPREFIX}-release  $1 --owner=clement
+}
+
+function kojidistrepo {
+	koji dist-repo ${KOJITAGPREFIX}-release --allow-missing-signatures
+}
