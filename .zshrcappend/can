@@ -1,0 +1,15 @@
+
+function canmodprobe {
+	EXTRAMODULES="/lib/modules/`uname -r`/extra"
+	sudo insmod $EXTRAMODULES/can.ko.xz
+	sudo insmod $EXTRAMODULES/vcan.ko.xz
+	sudo insmod $EXTRAMODULES/j1939/can-j1939.ko.xz
+	sudo insmod $EXTRAMODULES/can-raw.ko.xz
+	sudo insmod $EXTRAMODULES/can-bcm.ko.xz
+	sudo insmod $EXTRAMODULES/can-dev.ko.xz
+}
+
+function setvcan {
+	sudo ip link add $1 type vcan
+	sudo ip link set $1 up
+}

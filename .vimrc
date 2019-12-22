@@ -155,7 +155,7 @@ set  guifont =Courier\ 12 " Modifier la police
 set  tabstop =4
 set  shiftwidth =4
 set  softtabstop =4
-set  expandtab    "supprime les tabulations et met des espaces
+"set  expandtab    "supprime les tabulations et met des espaces
 set  incsearch " Afficher les résultats de la recherche au moment de la saisie
 " Recherche sensible à la casse, ou pas, ou un peu
 set  ignorecase

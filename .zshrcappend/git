@@ -13,3 +13,7 @@ function formatpatch {
         git format-patch -M -n -s -o $1 origin/master
     fi
 }
+
+function gitrefloglostcommit {
+	git log --reflog
+}

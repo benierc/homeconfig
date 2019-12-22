@@ -1,0 +1,24 @@
+function echocommand {
+    echo $*
+    command $*
+}
+
+function agl-low-can {
+	echocommand afb-daemon --name=aft-agl-service-can-low-level --token= --workdir=package --roothttp=. --binding=./lib/afb-low-can-binding.so --ws-server=unix:/tmp/low-can --tracereq=common --traceevt=all -vvv
+}
+
+function agl-low-can-noevent {
+	echocommand afb-daemon --name=aft-agl-service-can-low-level --token= --workdir=package --roothttp=. --binding=./lib/afb-low-can-binding.so --ws-server=unix:/tmp/low-can
+}
+
+#
+#function low-can {
+#    echocommand afb-daemon --name=agl-service-can-low-level --token= --workdir=package --roothttp=. --binding=./lib/afb-low-can-binding.so  --ws-server=unix:/tmp/low-can $*
+#}
+#
+#function agl-low-can {
+#    low-can --tracereq=common --traceevt=all -vvv
+#}
+
+
+
