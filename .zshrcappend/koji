@@ -38,3 +38,6 @@ function kojiaddpkg {
 function kojidistrepo {
 	koji dist-repo ${KOJITAGPREFIX}-release --allow-missing-signatures
 }
+
+alias kojif='koji -c ~/.kojif/config-clement'
+alias kojidn='koji -c ~/.kojidn/config'

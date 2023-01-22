@@ -11,6 +11,12 @@
 	username = benierc
 #[i18n]
     #commitencoding = ISO-8859-1
+[pull]
+	rebase = true
+[init]
+	defaultBranch = master
+[localhost]
+	UserKnownHostsFile=/dev/null
 [filter "lfs"]
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f

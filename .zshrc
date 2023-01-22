@@ -127,3 +127,5 @@ for appendsource in $(ls $zshrcappend | grep -v "~"); do
 done
 
 export EDITOR='vim'
+
+autoload -U compinit; compinit
