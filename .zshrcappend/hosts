@@ -1,0 +1,28 @@
+HOST_LIST="\
+vm-ais.lorient.iot \
+"
+
+function cathosts {
+	echo -e $HOST_LIST
+}
+
+function echossh {
+	echo "ssh $*"
+	ssh $*
+}
+
+function sshhost {
+	user=
+	if [ -z $1 ]; then
+		user=root
+	fi
+	cpt=0
+	tmp_host_list=""
+	for host in $HOST_LIST; do
+		tmp_host_list="$tmp_host_list \n$cpt: $host"
+	done
+	echo -e "$tmp_host_list"
+	read -p "Choose host for user=[default:root]" nb
+	host=$(echo -e $tmp_host_list | egrep "^$nb:" | sed -r "s/[0-9]+: //")
+	echossh $user@$host
+}

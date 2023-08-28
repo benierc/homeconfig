@@ -1,0 +1,42 @@
+setopt shwordsplit
+function wgetwildcard {
+	wget -q -r -nd -nc --no-parent -A $@
+}
+
+function wgetredhat {
+	/usr/bin/wget -q --private-key=/home/clement/work/gitpkgrebase/./redhatcerts/5455645814426492464-key.pem --certificate=/home/clement/work/gitpkgrebase/./redhatcerts/5455645814426492464.pem --ca-certificate=/home/clement/work/gitpkgrebase/./redhatcerts/redhat-uep.pem $@
+}
+
+function pip3install {
+	pip3 --user $@
+}
+
+alias oscl='osc -A https://obs.lorient.iot'
+
+function downloadrpms {
+	[[ "$(basename $(pwd))" != "$1" ]] && mkdir -p $1 && cd $1
+	local name="$1*.rpm"
+	local url=$2
+	echo "download with wildcard $name"
+	for arch in x86_64 aarch64; do
+		echo "download $url..."
+		wgetwildcard $name `eval echo $url`
+	done
+}
+
+function downloadrpmsrocky {
+	local version=$1
+	local repos=$(echo $2 | tr ',' ' ')
+	local pkg=$3
+	for repo in $repos; do
+		downloadrpms $pkg "http://rocky.quelquesmots.fr/${version}/${repo}/\$arch/os/Packages/${pkg:0:1}/"
+	done
+}
+
+function whatprovidesrhel92 {
+	ssh root@redhat9-test.lorient.iot "dnf whatprovides '$1'"
+}
+
+function requiresrhel92 {
+	ssh root@redhat9-test.lorient.iot "dnf repoquery --requires '$1'"
+}

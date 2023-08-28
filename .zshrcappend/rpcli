@@ -1,0 +1,12 @@
+DIR_REDPESKCLI=~/repos/git.ovh.iot/redpesk-cli/bin
+export PATH="${DIR_REDPESKCLI}:$PATH"
+
+# get zsh completion
+$DIR_REDPESKCLI/rp-cli completion zsh > $DIR_REDPESKCLI/rp-cli-prompt
+
+fpath=($DIR_REDPESKCLI $fpath)
+
+alias rpclif='rp-cli --serveralias factory'
+alias rpclidn='rp-cli --serveralias distro'
+alias rpclic='rp-cli --serveralias community'
+

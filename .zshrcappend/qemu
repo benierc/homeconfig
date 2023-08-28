@@ -1,0 +1,90 @@
+function get_initrd {
+	ls | grep -E "initramfs"
+}
+
+function start_qemu_x86_64 {
+	QEMU_ARCH=x86_64
+	CONSOLE=ttyS0
+	start_qemu $@ -enable-kvm -cpu kvm64 -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+popcnt -initrd $(get_initrd)
+}
+
+function start_qemu_aarch64 {
+	QEMU_ARCH=aarch64
+	CONSOLE=ttyAMA0
+	echo "BSP=$BSP"
+	if [[ $BSP == "renesas-gen3" ]]; then
+		start_qemu --rootpath /dev/vda4 $@ -M accel=tcg,type=virt -cpu cortex-a57
+	elif [[ $BSP =~ ^(imx8|solidrun-edge-gateways|solidrun-hummingboard)$ ]]; then
+		start_qemu --rootpath /dev/vda4 $@ -M accel=tcg,type=virt -cpu cortex-a72
+	elif [[ $BSP =~ ^(rpi)$ ]]; then
+		start_qemu --rootpath /dev/vda5 $@ -M accel=tcg,type=virt -cpu cortex-a72
+	else
+		start_qemu $@ -M accel=tcg,type=virt -cpu cortex-a57 -initrd $(get_initrd)
+	fi
+}
+
+function start_qemu {
+	SECURITY=smack
+	ROOT_PATH="LABEL=rootfs"
+	SSH_PORT=3333
+
+	QEMU_ARGS=()
+	while [ "$1" ]; do
+		case $1 in
+			-p | --port) shift
+				SSH_PORT=$1
+				;;
+			-r | --rootpath) shift
+				ROOT_PATH=$1
+				;;
+			-s | --security) shift
+				SECURITY=$1
+				;;
+			 *)
+				QEMU_ARGS+=$1
+				;;
+		esac
+		shift
+	done
+
+ 	# be sure SSH_PORT is available
+ 	while nc localhost $SSH_PORT -w 1; do
+        SSH_PORT=$((SSH_PORT+1))
+ 	done
+
+	ssh-keygen -R "[localhost]:${SSH_PORT}" || :
+
+ 	set -x
+ 	qemu-system-${QEMU_ARCH} \
+ 		-kernel $(ls | grep -E "vmlinuz|Image|kernel") \
+ 		-hda $(ls | grep -E "^(redpesk.raw|Redpesk-OS.img)$") \
+ 		-m 2048 \
+ 		-smp 4 \
+ 		-nographic \
+ 		-device virtio-rng-pci \
+ 		-net nic \
+ 		-net user,hostfwd=tcp::${SSH_PORT}-:22 \
+ 		${QEMU_ARGS[@]} \
+ 		-append 'console='"$CONSOLE"' rw rootwait security='"${SECURITY}"' root='"${ROOT_PATH}"' '"${EXTRA_ARGS}"''
+ }
+
+function qemu_grub {
+	OVMF="/usr/share/OVMF/x64/OVMF_CODE.fd"
+	SSH_PORT=4444
+	ssh-keygen -R "[localhost]:${SSH_PORT}" || :
+
+	echo ok
+	qemu-system-x86_64 \
+	    -hda "Redpesk-OS.img" \
+	    -enable-kvm -m 2048 \
+	    -cpu kvm64 \
+	    -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+popcnt \
+	    -smp 4 \
+	    -vga virtio \
+	    -device virtio-rng-pci \
+	    -serial mon:stdio \
+	    -serial null \
+	    -net nic \
+	    -net user,hostfwd=tcp::$PORT_SSH-:22 \
+	    -bios $OVMF
+}

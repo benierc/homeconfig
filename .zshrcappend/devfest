@@ -1,0 +1,25 @@
+function print_cmd {
+	set -x
+	$@
+	{ set +x; } 2>/dev/null
+}
+
+function devfest_client_nosecurity {
+	print_cmd python3 clienthack.py 6000
+}
+
+function devfest_client_smack {
+	print_cmd python3 clienthack.py 6000
+}
+
+function devfest_client_selinux {
+	print_cmd python3 clienthack.py 5000
+}
+
+function ssh_devfest_smack {
+	ssh -p 3336 root@locahost
+}
+
+function ssh_devfest_selinux {
+	ssh -p 4000 root@locahost
+}

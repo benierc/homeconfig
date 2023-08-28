@@ -1,0 +1,2 @@
+
+alias yaygnomeshell='yay -Sy $(pacman -Qqme | grep gnome-shell-extension)'

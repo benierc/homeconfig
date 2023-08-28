@@ -1,0 +1,3 @@
+function lsof_i {
+	lsof -a -i TCP -P +c 0 -c "$@"
+}

@@ -1,0 +1,200 @@
+list_hosts="\
+jenkins@iotbzh-runtime-test01.hv02.redpesk.iot \
+root@iotbzh-hub-test01.hv02.redpesk.iot \
+"
+
+function redpesk_list_hosts {
+	setopt sh_word_split
+	i=0
+	local IFS=' '
+	for host in ${list_hosts}; do
+		echo "$i:$host"
+		i=$((i + 1))
+	done
+	read "nb?ssh?[number]"
+	echo $nb
+	( [ $nb -lt $i ] && [ $nb -ge 0 ] ) || return
+	tmp_i=0
+	for host in ${list_hosts}; do
+		echo "$tmp_i $i"
+		if [ $tmp_i -eq $i ]; then
+			ssh $host
+		fi
+		$((tmp_i + 1))
+	done
+}
+
+alias kojitest='koji -c ~/.kojit/config'
+
+
+function kojitest_cancel_all_tasks {
+	[[ "$(kojitest list_tasks)" != "(no tasks)" ]] && for i in $(kojitest list-tasks | grep -v ID | awk '{print $1}'); do echo "cancel $i..."; kojitest cancel $i; done
+}
+
+function kojif_cancel_all_tasks {
+	[[ "$(kojif list_tasks)" != "(no tasks)" ]] && for i in $(kojif list-tasks | grep -v ID | awk '{print $1}'); do echo "cancel $i..."; kojif cancel $i &; done
+}
+
+function addbuild {
+	local pkg
+	echo "[addbuild] args=$@"
+	DISTRO=$1; shift
+	giturl=$(git remote -v | head -n 1 | awk '{print $2}' | sed "s#:#/#" | sed "s#git@#http://#")
+	gitcommit=$(git rev-parse HEAD)
+
+
+	[ "$1" ] && [[ "$1" == "--pkg" ]] && pkg=$2 && shift 2
+	[ "$1" ] && [[ "${1[0,5]}" == "--pkg" ]] && pkg=${1:6} && shift
+	[ -z "$pkg" ] && pkg=$(basename $giturl | sed "s/.git$//")
+
+	echo "[KOJI BUILD]: DISTRO:${DISTRO} giturl:${giturl} commit:${gitcommit} pkg:${pkg}"
+	[ -z ${pkg} ] || [ -z ${giturl} ] || [ -z ${gitcommit} ] && echo "empty issue" && return -1
+
+	echo
+	echo "KOJI ADDPKG"
+	koji add-pkg ${DISTRO}-release ${pkg} --owner=clement
+	echo
+	echo "KOJI BUILD..."
+	koji build ${DISTRO} git+${giturl}#${gitcommit} --nowait $@
+}
+
+
+function buildrpd33 {
+	addbuild redpesk-devel-33 $@
+}
+
+function buildtmprpd33 {
+	addbuild tmpredpesk-devel-33 $@
+}
+
+function buildrpd33agl {
+	addbuild AGL--redpesk-devel-33 $@
+}
+
+function buildrpd33aglscratch {
+	KOJIBUILDOPTS="--scratch"
+	addbuild AGL--redpesk-devel-33 $@
+}
+
+function buildrpd33aglextra {
+	addbuild AGL-extra--redpesk-devel-33 $@
+}
+
+function buildrpd28agl {
+	addbuild AGL-II--redpesk-devel-28 $@
+}
+
+function buildrpd28aglscratch {
+	KOJIBUILDOPTS="--scratch"
+	addbuild AGL-II--redpesk-devel-28 $@
+}
+
+function buildbugelez {
+	addbuild redpesk-devel-bugelez $@
+}
+
+function buildarz {
+	addbuild redpesk-devel-arz $@
+}
+
+function buildbackport {
+	addbuild centos-backports-arz $@
+}
+
+function buildarzagl {
+	addbuild AGL--redpesk-devel-arz $@
+}
+
+function buildcentosemulated {
+	addbuild centos-emulated-stream $@
+}
+
+
+function iotpkg {
+	echo "from zshrcappend"
+	path_git="/home/clement/repos/git.ovh.iot/"
+	path_iotpkg=$path_git/iotpkg
+	ln -sf ${path_iotpkg}/iotpkg/__main__.py /tmp/iotpkg
+	PYTHONPATH=${path_iotpkg}:${path_git}/koji-crossbuild-plugins:$path_git/redpesk-utils python /tmp/iotpkg $@
+}
+
+function source_afb {
+	export PATH=/opt/redpesk/bin:$PATH
+	export REDPESK_ROOT=/opt/redpesk
+	export PKG_CONFIG_PATH=${REDPESK_ROOT}/lib/pkgconfig
+	export LD_LIBRARY_PATH=${REDPESK_ROOT}/lib
+	export CMAKE_MODULE_PATH=${REDPESK_ROOT}/share/cmake-3.18/Modules
+}
+
+function cmake_redpesk_debug {
+	source_afb
+	cmake  -DCMAKE_INSTALL_PREFIX=${REDPESK_ROOT} -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH} $@
+}
+
+function gitpkgarchive {
+	version=$1
+	name=$(git remote -v | head -n 1 | awk '{print $2}' | awk -F / '{print $3}' | sed "s/\.git//")
+	prefix="$name-$version"
+	git archive --format "tar.gz" --prefix "$prefix/" -o "$prefix.tar.gz" HEAD
+}
+
+function upkg {
+	/home/clement/repos/git.ovh.iot/iot-devtools/script/sandbox/upkg $*
+}
+
+function qemu_redpesk_x86_64 {
+	qemu-system-x86_64 -hda *.raw -enable-kvm -m 2048     -cpu kvm64 -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+popcnt     -vga virtio -show-cursor     -device virtio-rng-pci     -serial mon:stdio -serial null     -soundhw hda     -net nic     -net user,hostfwd=tcp::3333-:22     -bios /usr/share/ovmf/x64/OVMF_CODE.fd $*
+}
+
+function jgitpkgs {
+	cd ~/repos/iotbzh-git-dev01
+	[ "$1" ] && cd *$1*
+}
+
+function jgitlab {
+	cd ~/repos/git.ovh.iot
+	[ "$1" ] && cd *$1*
+}
+
+function downloadcentos {
+	branch=c8s
+	pkgname=$(find . -name "*.spec" -printf %f | sed "s/\.spec//g")
+	if [ -z $pkgname ]; then
+		echo "No pkgname found, aborting..."
+	fi
+	echo "pkgname=$pkgname"
+	sha=$(cat .$pkgname.metadata | awk '{print $1}')
+	dest=$(cat .$pkgname.metadata | awk '{print $2}')
+	url="https://git.centos.org/sources/$pkgname/$branch/$sha"
+	echo "sha=$sha dest=$dest url=$url"
+	wget -q $url -O $dest
+}
+
+function upgrade_archive {
+	pkgname=$(find . -name "*.spec" -printf %f | sed "s/\.spec//g")
+	git rm $pkgname-*
+	iotpkg archive $*
+	git add -u
+	git add $pkgname-*
+}
+
+function mock_stack {
+	stask=$1
+	ssh root@$stack
+}
+
+function builders_cmd {
+	domainname=$1; shift
+	i=1
+	while ssh -q root@$domainname$i echo > /dev/null; do
+		echo "\tssh root@$domainname$i $@"
+		ssh root@$domainname$i $@
+		echo
+		i=$((i + 1))
+	done
+}
+
+function distro_open_port {
+	set -x
+	ssh -L 443:distro-hub-prod02.redpesk.onprem:443 root@distro-prod02-hub
+}
