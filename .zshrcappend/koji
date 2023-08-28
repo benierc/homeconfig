@@ -41,3 +41,27 @@ function kojidistrepo {
 
 alias kojif='koji -c ~/.kojif/config-clement'
 alias kojidn='koji -c ~/.kojidn/config'
+
+function kojidn_importrpmstag {
+	local buildids=
+	local newer=
+	local pkgname=
+	local buildids=$(kojidn import --create-build *.rpm | grep "Creating empty build" | awk '{print $4}')
+	for buildid in $buildids; do
+		echo $buildid
+		[ "$newer" ] || newer=$buildid
+		rpmdev-vercmp $newer $buildid &> /dev/null
+		res=$?
+		[ $res -eq 11 ] || newer=$buildid
+	done
+	local pkgname=$(echo $newer | sed -r "s/-[^-]+-[^-]+$//")
+	echo "newer is $newer pkgname=$pkgname"
+	kojidn add-pkg --owner=clement $1 $pkgname
+	kojidn tag-build --nowait $1 $newer
+}
+
+function kojidn_reset {
+	local build=$(echo $1 | sed -r 's/\.(x86_64|aarch64|noarch)\.rpm$//')
+	local buildid=$(kojidn  call --json getBuild $build | jq -r '.build_id')
+	kojidn call resetBuild $buildid
+}

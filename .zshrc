@@ -54,7 +54,7 @@ ENABLE_CORRECTION="true"
 # "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
 # or set a custom format using the strftime function format specifications,
 # see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
+#setopt HIST_STAMPS="yyyy/dd/yyyy"
 setopt EXTENDED_HISTORY
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_IGNORE_DUPS
@@ -73,7 +73,10 @@ ZSH_CUSTOM=~/.zsh_custom
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git autojump vi-mode git-prompt zsh-autosuggestions fzf)
+
+#plugins=(git autojump vi-mode git-prompt zsh-autosuggestions fzf)
+#plugins=(git autojump vi-mode zsh-autosuggestions fzf)
+plugins=(git autojump zsh-autosuggestions fzf)
 
 
 source $ZSH/oh-my-zsh.sh
