@@ -1,5 +1,11 @@
+source ~/.zshrcappend/nettools
+
+function get_image {
+ 	ls | grep -E "^(redpesk.raw|Redpesk-OS.img)$"
+}
+
 function get_initrd {
-	ls | grep -E "initramfs"
+	ls | grep -E "initramfs" || virt-get-kernel -a Redpesk-OS.img &> /dev/null
 }
 
 function start_qemu_x86_64 {
@@ -11,15 +17,34 @@ function start_qemu_x86_64 {
 function start_qemu_aarch64 {
 	QEMU_ARCH=aarch64
 	CONSOLE=ttyAMA0
-	echo "BSP=$BSP"
-	if [[ $BSP == "renesas-gen3" ]]; then
-		start_qemu --rootpath /dev/vda4 $@ -M accel=tcg,type=virt -cpu cortex-a57
-	elif [[ $BSP =~ ^(imx8|solidrun-edge-gateways|solidrun-hummingboard)$ ]]; then
-		start_qemu --rootpath /dev/vda4 $@ -M accel=tcg,type=virt -cpu cortex-a72
-	elif [[ $BSP =~ ^(rpi)$ ]]; then
-		start_qemu --rootpath /dev/vda5 $@ -M accel=tcg,type=virt -cpu cortex-a72
+
+	local QEMU_ARGS=()
+	bsp_1="renesas-gen3"
+	bsp_2="imx8|solidrun-edge-gateways|solidrun-hummingboard"
+	bsp_3="rpi|layerscape"
+	bsps=$(echo "$bsp_1|$bsp_2|$bsp_3")
+	echo $bsps
+
+	while [ "$1" ]; do
+		case $1 in
+			--bsp)
+				BSP=$(echo $bsps | tr '|' '\n' | fzf)
+				;;
+			*)
+				QEMU_ARGS+=$1
+				;;
+		esac
+		shift
+	done
+
+	if [[ $BSP =~ ^($bsp_1)$ ]]; then
+		start_qemu --rootpath /dev/vda4 ${QEMU_ARGS[@]} -M accel=tcg,type=virt -cpu cortex-a57
+	elif [[ $BSP =~ ^($bsp_2)$ ]]; then
+		start_qemu --rootpath /dev/vda4 ${QEMU_ARGS[@]} -M accel=tcg,type=virt -cpu cortex-a72
+	elif [[ $BSP =~ ^($bsp_3)$ ]]; then
+		start_qemu --rootpath /dev/vda5 ${QEMU_ARGS[@]} -M accel=tcg,type=virt -cpu cortex-a72
 	else
-		start_qemu $@ -M accel=tcg,type=virt -cpu cortex-a57 -initrd $(get_initrd)
+		start_qemu ${QEMU_ARGS[@]} -M accel=tcg,type=virt -cpu cortex-a57 -initrd $(get_initrd)
 	fi
 }
 
@@ -27,8 +52,9 @@ function start_qemu {
 	SECURITY=smack
 	ROOT_PATH="LABEL=rootfs"
 	SSH_PORT=3333
+	local Q_DISPLAY="-display none"
 
-	QEMU_ARGS=()
+	local QEMU_ARGS=()
 	while [ "$1" ]; do
 		case $1 in
 			-p | --port) shift
@@ -39,6 +65,10 @@ function start_qemu {
 				;;
 			-s | --security) shift
 				SECURITY=$1
+				;;
+			-b | --break) shift
+				rdbreakchoice="cmdline\npre-udev\npre-trigger\ninitqueue\npre-mount\nmount\npre-pivot\ncleanup"
+				EXTRA_ARGS="${EXTRA_ARGS} rd.break=$(echo -e $rdbreakchoice | fzf --prompt='rd.break choices')"
 				;;
 			 *)
 				QEMU_ARGS+=$1
@@ -54,18 +84,20 @@ function start_qemu {
 
 	ssh-keygen -R "[localhost]:${SSH_PORT}" || :
 
+	local IMAGE=$(get_image)
  	set -x
  	qemu-system-${QEMU_ARCH} \
  		-kernel $(ls | grep -E "vmlinuz|Image|kernel") \
- 		-hda $(ls | grep -E "^(redpesk.raw|Redpesk-OS.img)$") \
+ 		-hda $IMAGE \
  		-m 2048 \
  		-smp 4 \
- 		-nographic \
  		-device virtio-rng-pci \
+		$Q_DISPLAY \
+	    -serial mon:stdio \
  		-net nic \
  		-net user,hostfwd=tcp::${SSH_PORT}-:22 \
  		${QEMU_ARGS[@]} \
- 		-append 'console='"$CONSOLE"' rw rootwait security='"${SECURITY}"' root='"${ROOT_PATH}"' '"${EXTRA_ARGS}"''
+ 		-append 'console='"$CONSOLE"' cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 rw rootwait security='"${SECURITY}"' root='"${ROOT_PATH}"' '"${EXTRA_ARGS}"' loglevel=7'
  }
 
 function qemu_grub {
@@ -87,4 +119,16 @@ function qemu_grub {
 	    -net nic \
 	    -net user,hostfwd=tcp::$PORT_SSH-:22 \
 	    -bios $OVMF
+}
+
+function ssh_qemu {
+	local user=$1
+	[ $user ] || user=root
+	local port=$(lsof_i qemu | grep '*:' | awk '{print $9}' | sed 's/*://' | fzf)
+	set -x
+	ssh-copy-id -p $port $user@localhost 2> /dev/null
+	ssh $user@localhost -p $port
+}
+
+function set_latest_silo_generic {
 }

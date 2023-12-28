@@ -1,0 +1,9 @@
+function openssl_check {
+	set -x
+	openssl x509 -noout -text -in $1
+}
+
+function openssl_check_der {
+	set -x
+	openssl x509 -inform der -noout -text -in $1
+}

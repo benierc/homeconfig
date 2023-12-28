@@ -1,0 +1,10 @@
+BCKJOBS=10
+
+function wait_slot {
+    local BCKJOBS=${1:-$BCKJOBS}
+    while :; do
+        local nbjobs=$(jobs -p | wc -l)
+        [ $nbjobs -lt $BCKJOBS ] && return
+        sleep 1
+    done
+}

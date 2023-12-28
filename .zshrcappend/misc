@@ -1,4 +1,10 @@
 setopt shwordsplit
+
+
+alias getfattrall='getfattr -d -m -'
+
+alias fzfspace='tr " " "\n" | fzf'
+
 function wgetwildcard {
 	wget -q -r -nd -nc --no-parent -A $@
 }
@@ -33,6 +39,12 @@ function downloadrpmsrocky {
 	done
 }
 
+function downloadrpmsepel {
+	local version=$1
+	local pkg=$2
+	downloadrpms $pkg "http://fr2.rpmfind.net/linux/epel/${version}/Everything/\$arch/Packages/${pkg:0:1}/"
+}
+
 function whatprovidesrhel92 {
 	ssh root@redhat9-test.lorient.iot "dnf whatprovides '$1'"
 }
@@ -40,3 +52,44 @@ function whatprovidesrhel92 {
 function requiresrhel92 {
 	ssh root@redhat9-test.lorient.iot "dnf repoquery --requires '$1'"
 }
+
+function whip {
+	noglob whiptail "$@"
+}
+
+function listssh {
+	setopt sh_glob
+
+	local IFS=$'\n'
+	ssh $(history | grep -E "^ *[[:digit:]]+  ssh .*@([[:alnum:]]|\.|-)+$" | awk -F "ssh" '{print $2}' | fzf --tac | sed -r "s/^\s+//g")
+}
+
+function losetup_mount {
+	local file=$1
+	losetup -j ${file} || sudo losetup -f -P $file
+	local dev=$(losetup -j ${file} | awk -F : '{print $1}')
+	mkdir -p /tmp/$file
+	echo $dev
+	parts=$(ls ${dev}* | sed "s#$dev##g")
+echo $parts
+	for part in $parts; do
+		mkdir -p /tmp/$file/$part
+		sudo mount /dev/${dev}${part} /tmp/$file/$part
+	done
+}
+
+function losetup_umount {
+	local file=$1
+	local dev=$(losetup -j ${file} | awk -F : '{print $1}')
+	sudo umount /tmp/$file/*
+	sudo losetup -d ${dev}
+}
+
+function dwimage {
+	local url=$1
+	local image=$(basename $url)
+	[ -f $image ] || wget -q $1 -o $image
+	tar xf $image
+	virt-get-kernel -a Redpesk-OS.img
+}
+

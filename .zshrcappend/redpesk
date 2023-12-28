@@ -1,28 +1,4 @@
-list_hosts="\
-jenkins@iotbzh-runtime-test01.hv02.redpesk.iot \
-root@iotbzh-hub-test01.hv02.redpesk.iot \
-"
-
-function redpesk_list_hosts {
-	setopt sh_word_split
-	i=0
-	local IFS=' '
-	for host in ${list_hosts}; do
-		echo "$i:$host"
-		i=$((i + 1))
-	done
-	read "nb?ssh?[number]"
-	echo $nb
-	( [ $nb -lt $i ] && [ $nb -ge 0 ] ) || return
-	tmp_i=0
-	for host in ${list_hosts}; do
-		echo "$tmp_i $i"
-		if [ $tmp_i -eq $i ]; then
-			ssh $host
-		fi
-		$((tmp_i + 1))
-	done
-}
+source ~/.zshrcappend/misc
 
 alias kojitest='koji -c ~/.kojit/config'
 
@@ -185,16 +161,50 @@ function mock_stack {
 
 function builders_cmd {
 	domainname=$1; shift
+
+	(set -x; ssh root@$domainname-hub $@)
+	echo
 	i=1
-	while ssh -q root@$domainname$i echo > /dev/null; do
-		echo "\tssh root@$domainname$i $@"
-		ssh root@$domainname$i $@
+	while ssh -q root@${domainname}-builder-1$i echo > /dev/null; do
+		(set -x; ssh root@${domainname}-builder-1$i $@)
 		echo
 		i=$((i + 1))
 	done
 }
 
+function builders_dnf {
+	builder=$1; shift
+	builders_cmd $builder dnf --repo obs --repofrompath obs,http://obs.lorient.iot:82/redpesk:/Factory:/next:/AlmaLinux_8/AlmaLinux_8/ --nogpgcheck $@
+}
+
+function redpeskdistro_cmd {
+	builders_cmd distro-prod02 $@
+}
+
+function redpeskfactory_cmd {
+	builders_cmd factory-test01 $@
+}
+
+function redpeskdistro_dnfobs {
+	builders_dnf distro-prod02 $@
+}
+
+function redpeskfactory_dnfobs {
+	builders_dnf factory-test01 $@
+}
+
 function distro_open_port {
 	set -x
 	ssh -L 443:distro-hub-prod02.redpesk.onprem:443 root@distro-prod02-hub
+}
+
+function ssh_stask {
+	local host=$(cat $(find ~/repos/git.ovh.iot/rp-infrastructure/ansible/stacks/ -iname '*.ssh' -type f) | grep -E "^Host" | awk '{print $2}' | fzf)
+
+	set -x
+	ssh root@$host
+}
+
+function mockoutput_sanity {
+	echo "$@" | sed -r -e 's/[//g' -e 's/]//g' -e 's/,//g'
 }

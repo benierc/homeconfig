@@ -1,3 +1,8 @@
+source ~/.zshrcappend/backgrounds
+
+CACHERPCLI=/tmp/rpclicache
+mkdir -p $CACHERPCLI
+
 DIR_REDPESKCLI=~/repos/git.ovh.iot/redpesk-cli/bin
 export PATH="${DIR_REDPESKCLI}:$PATH"
 
@@ -6,7 +11,83 @@ $DIR_REDPESKCLI/rp-cli completion zsh > $DIR_REDPESKCLI/rp-cli-prompt
 
 fpath=($DIR_REDPESKCLI $fpath)
 
-alias rpclif='rp-cli --serveralias factory'
-alias rpclidn='rp-cli --serveralias distro'
-alias rpclic='rp-cli --serveralias community'
+function _rpcli {
+	echo "+ rp-cli $@" >&2
+	rp-cli $@
+}
 
+alias rpclif='_rpcli --serveralias factory'
+alias rpclidn='_rpcli --serveralias distro'
+alias rpclic='_rpcli --serveralias community'
+alias rpclithales='_rpcli --serveralias thales'
+
+function rpclidn_build {
+	local distro=$1 project=$2 app=$(echo $3 | tr '[:upper:]' '[:lower:]')
+	shift 3
+	rpclidn applications build -d $distro -p $project $app $@
+}
+
+alias rpclidnbuildbatz='rpclidn_build redpesk-lts-batz-2.0-update'
+alias rpclidnbuildarz11='rpclidn_build redpesk-lts-arz-1.1'
+alias rpclidnbuildautosd='rpclidn_build redpesk-autosd-9'
+
+function reset_cacherpcli {
+	rm -fr $CACHERPCLI
+	mkdir -p $CACHERPCLI
+}
+
+function rpclidn_projects {
+	local listprojects=$CACHERPCLI/listprojects
+	[ -f $listprojects  ] || rpclidn --nopager projects list > $listprojects
+	cat $listprojects | awk '{print $2}' | tail -n+2
+}
+
+function rpclidn_appdistros {
+	local project=$1 app=$(echo $2 | tr '[:upper:]' '[:lower:]')
+	rpclidn --rawoutput applications get -p $project $app  | jq -r '.distros[] | select(.set == true) | .slug'
+}
+
+function rpclidn_append_optionnal_distro {
+	local distro=$1 project=$2 app=$(echo $3 | tr '[:upper:]' '[:lower:]')
+	distros=$(rpclidn_appdistros $project $app)
+
+	distros="$distro,$(echo $distros | tr ' ' ',')"
+	rpclidn applications update --optional-distro $distros -p $project $app
+}
+
+function rpclidn_remove_optionnal_distro {
+	local distro=$1 project=$2 app=$(echo $3 | tr '[:upper:]' '[:lower:]')
+	local distros=$(rpclidn_appdistros $project $app)
+	! echo $distros | grep $distro && echo "no distro=$distro for $app, no update" && return 0
+
+	distros=$(echo $distros | sed "s/redpesk-autosd-9\s*//" | tr ' ' ',' | sed 's/,$//')
+	rpclidn applications update --optional-distro $distros -p $project $app
+}
+
+function rpclidn_listapps {
+	local project=$1
+	rpclidn --nopager applications list -p $project | tail -n+2 | awk '{print $2}'
+}
+
+function rpclidn_listappsuuid {
+	local project=$1
+	rpclidn --nopager applications list -p $project | tail -n+2 | awk '{print $1}'
+}
+
+function rpclidn_buildproject {
+	local distro=$1
+	local project=$2
+	for app in $(rpclidn_listappsuuid $project); do
+		rpclidn_build $distro $project $app --nonblocking
+	done
+}
+
+function rpclidn_removedistroproject {
+	local distro=$1
+	local project=$2
+
+	for i in $(rpclidn_listappsuuid $project); do
+		rpclidn_remove_optionnal_distro $distro $project $i
+		#wait_slot 1
+	done
+}

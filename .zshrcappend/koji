@@ -65,3 +65,37 @@ function kojidn_reset {
 	local buildid=$(kojidn  call --json getBuild $build | jq -r '.build_id')
 	kojidn call resetBuild $buildid
 }
+
+function kojidn_cancel {
+	local reg=$1
+	to_cancel=
+	for i in $(kojidn -q list-tasks | grep "$reg"| awk '{print $1}'); do
+		to_cancel="$to_cancel $i"
+	done
+	[ "$to_cancel" ] && kojidn cancel $to_cancel
+}
+
+function kojidn_taginfo {
+	kojidn taginfo $(kojidn -q list-tags | grep "$1" | fzf)
+}
+
+function kojidn_regenrepo {
+	kojidn regen-repo $(kojidn -q list-tags | grep "$1" | fzf)
+}
+
+function kojidn_searchtags {
+	kojidn -q list-tags | grep "$1" | fzf
+}
+
+function kojidn_cancellist {
+	kojidn cancel $(kojidn -q list-tasks | grep "$1" | fzf | awk '{print $1}')
+}
+
+function entermockhub {
+	local builder=$1
+	local mockname=$(basename $2)
+	local sshdomain=root@distro-prod02-builder-1$builder
+	set -x
+	ssh $sshdomain runuser -u kojibuilder -- mock -r koji/$mockname install vim
+	ssh -t $sshdomain runuser -u kojibuilder -- mock -r koji/$mockname --shell
+}

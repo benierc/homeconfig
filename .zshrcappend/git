@@ -17,3 +17,16 @@ function formatpatch {
 function gitrefloglostcommit {
 	git log --reflog
 }
+
+function gitarchive {
+	local name=$(cat *.spec| grep Name: | awk '{print $2}' | head -n 1)
+	local remote=$(cat *.spec| grep URL: | awk '{print $2}' | head -n 1)
+	echo "Name: $name URL: $remote"
+	local version=$(echo $1 | sed "s/-/+/g")
+	local ref=$2
+	rm -fr sources
+	git clone $remote sources
+	cd sources
+	git archive --prefix=$name-$version/ -o ../$name-$version.tar.gz $ref
+	cd ..
+}
