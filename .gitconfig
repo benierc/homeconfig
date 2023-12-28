@@ -1,6 +1,0 @@
-[user]
-	name = Clément Bénier
-	email = clement.benier@iot.bzh
-	signingkey = 4E4863E78650DC43B5ADBE9EFBEE355FF992CF42
-[include]
-	path = ~/.home.gitconfig

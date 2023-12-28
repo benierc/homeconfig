@@ -1,0 +1,24 @@
+[core]
+	excludesfile = ~/.gitglobal/gitignore
+    #hooksPath = /home/clement/.gitglobal/hooks/
+[commit]
+    gpgsign = true
+[gitreview]
+	username = benierc
+#[i18n]
+    #commitencoding = ISO-8859-1
+[pull]
+	rebase = true
+[init]
+	defaultBranch = master
+[localhost]
+	UserKnownHostsFile=/dev/null
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
+[alias]
+  fixup = "!git log -n 50 --pretty=format:'%h %s' --no-merges | fzf | cut -c -7 | xargs -o git commit --fixup"
+
