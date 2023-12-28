@@ -7,7 +7,7 @@ DIR_REDPESKCLI=~/repos/git.ovh.iot/redpesk-cli/bin
 export PATH="${DIR_REDPESKCLI}:$PATH"
 
 # get zsh completion
-$DIR_REDPESKCLI/rp-cli completion zsh > $DIR_REDPESKCLI/rp-cli-prompt
+[ -f $DIR_REDPESKCLI/rp-cli-prompt ] && $DIR_REDPESKCLI/rp-cli completion zsh > $DIR_REDPESKCLI/rp-cli-prompt
 
 fpath=($DIR_REDPESKCLI $fpath)
 
