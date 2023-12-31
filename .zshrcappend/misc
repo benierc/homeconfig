@@ -1,5 +1,5 @@
-setopt shwordsplit
-
+# comment because issue with autosugestion
+# setopt shwordsplit
 
 alias getfattrall='getfattr -d -m -'
 

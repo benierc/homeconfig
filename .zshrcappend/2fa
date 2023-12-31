@@ -1,1 +1,1 @@
-alias 2fa="echo $(oathtool -b --totp "$(cat ~/.2fa/iot.key)") | xclip"
+alias 2fa='echo $(oathtool -b --totp "$(cat ~/.2fa/iot.key)") | xclip'
