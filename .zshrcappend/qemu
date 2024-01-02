@@ -92,7 +92,7 @@ function start_qemu {
  		-m 2048 \
  		-smp 4 \
  		-device virtio-rng-pci \
-		$Q_DISPLAY \
+		$(echo ${Q_DISPLAY}) \
 	    -serial mon:stdio \
  		-net nic \
  		-net user,hostfwd=tcp::${SSH_PORT}-:22 \
