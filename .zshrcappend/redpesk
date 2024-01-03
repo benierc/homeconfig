@@ -208,3 +208,8 @@ function ssh_stask {
 function mockoutput_sanity {
 	echo "$@" | sed -r -e 's/[//g' -e 's/]//g' -e 's/,//g'
 }
+
+function gitclonedistro {
+	local project=$1; shift; local app=$1; shift
+	git clone git@distro-git-next.lorient.iot:clients/distro-runtime-prod02.redpesk.onprem/$project/$app $@
+}

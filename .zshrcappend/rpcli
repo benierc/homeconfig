@@ -16,15 +16,15 @@ alias rpclidn='rp-cli --serveralias distro'
 alias rpclic='rp-cli --serveralias community'
 alias rpclithales='rp-cli --serveralias thales'
 
-function rpcli {
-	echo "+ rp-cli $@" >&2
+function _rpcli_ {
+	echo "+ rp-cli $*" >&2
 	rp-cli $@
 }
 
-alias _rpclif='rpcli --serveralias factory'
-alias _rpclidn='rpcli --serveralias distro'
-alias _rpclic='rpcli --serveralias community'
-alias _rpclithales='rpcli --serveralias thales'
+alias _rpclif='_rpcli_ --serveralias factory'
+alias _rpclidn='_rpcli_ --serveralias distro'
+alias _rpclic='_rpcli_ --serveralias community'
+alias _rpclithales='_rpcli_ --serveralias thales'
 
 function rpclidn_build {
 	local distro=$1 project=$2 app=$(echo $3 | tr '[:upper:]' '[:lower:]')
