@@ -93,3 +93,13 @@ function dwimage {
 	virt-get-kernel -a Redpesk-OS.img
 }
 
+function downloadrpmfromexternalkoji {
+	set -x
+	url=$1; shift
+	arches=$@
+	for arch in $(echo $arches); do
+		for rpm in $(wget -qO- $url/$arch | grep -Eo ">(\w|-|\.)+.rpm" | sed "s/>//"); do
+			wget $url/$arch/$rpm
+		done
+	done
+}
