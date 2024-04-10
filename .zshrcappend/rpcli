@@ -33,6 +33,7 @@ function rpclidn_build {
 }
 
 alias rpclidnbuildbatz='rpclidn_build redpesk-lts-batz-2.0-update'
+alias rpclidnbuildbatz21='rpclidn_build redpesk-lts-batz-2.1-update'
 alias rpclidnbuildarz11='rpclidn_build redpesk-lts-arz-1.1'
 alias rpclidnbuildautosd='rpclidn_build redpesk-autosd-9'
 
@@ -95,4 +96,24 @@ function rpclidn_removedistroproject {
 		rpclidn_remove_optionnal_distro $distro $project $i
 		#wait_slot 1
 	done
+}
+
+function rpclidn_addappsrpm {
+	local project=$1
+	local branch=$2
+	local url=$3
+	local srpm=$(basename $url)
+	local pkg=$(echo $srpm | sed -r "s/(.+)-([^-])+-([^-])+/\1/")
+
+	local rhelversion=
+	local tag=
+
+	[ "$(echo $url | awk -F '/' '{print $4}')" == "redhat" ] && rhelversion=$(echo $url | awk -F '/' '{print $4}')
+	[ "$rhelversion" ] && tag=import-$rhelversion/$srpm
+
+	rplcidn applications --project $project --name $pkg --pkg-name $pkg \
+		--build-type=standard_build_accel \
+		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
+		--service "setverrel={'version':'false', 'release':'false'}"
+
 }
