@@ -108,11 +108,12 @@ function rpclidn_addappsrpm {
 	local rhelversion=
 	local tag=
 
-	[ "$(echo $url | awk -F '/' '{print $4}')" == "redhat" ] && rhelversion=$(echo $url | awk -F '/' '{print $4}')
-	[ "$rhelversion" ] && tag=import-$rhelversion/$srpm
+	[[ "$(echo $url | awk -F '/' '{print $4}')" == "redhat" ]] && rhelversion=$(echo "$url" | awk -F '/' '{print $6}')
+	[ "$rhelversion" ] && tag="import-$rhelversion/$srpm"
 
-	rplcidn applications --project $project --name $pkg --pkg-name $pkg \
-		--build-type=standard_build_accel \
+	rpclidn applications add --project $project --name $pkg --pkg-name $pkg \
+		--active-branch=$branch \
+		--build-type=accel_build_cross \
 		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
 		--service "setverrel={'version':'false', 'release':'false'}"
 
