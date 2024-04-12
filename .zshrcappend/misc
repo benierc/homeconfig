@@ -129,3 +129,24 @@ function importfromrocky {
 
 	downloadrpmfromexternalkoji $downloadurl src noarch x86_64 aarch64
 }
+
+function dnfsilo {
+	local silo="https://silo.redpesk.iot/redhat"
+	local rhelver=$1; shift
+
+	local vermajor=${rhelver%%.*}
+	local url=$silo/$vermajor/$rhelver
+
+	local installroot=/tmp/dnfsilo/$vermajor-$rhelver
+	mkdir -p $installroot
+
+	local dnfopts=(--installroot=${installroot})
+	local repo=
+	for repo in $(wget -qO- $url | grep "\[DIR\]" | sed -r "s/.*href=\"([^>]+)\">.*$/\1/"); do
+		repo=${repo::-1}
+		dnfopts+="--repofrompath=$repo,$url/$repo"
+		dnfopts+="--repo=$repo"
+	done
+
+	dnf ${dnfopts[@]} $@
+}
