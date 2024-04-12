@@ -18,7 +18,7 @@ alias rpclithales='rp-cli --serveralias thales'
 
 function _rpcli_ {
 	echo "+ rp-cli $*" >&2
-	rp-cli $@
+	rp-cli --nopager $@
 }
 
 alias _rpclif='_rpcli_ --serveralias factory'
@@ -98,6 +98,10 @@ function rpclidn_removedistroproject {
 	done
 }
 
+function rpclidn_distros {
+	_rpclidn --rawoutput distributions list | jq -r '.data[].slug'
+}
+
 function rpclidn_addappsrpm {
 	local project=$1
 	local branch=$2
@@ -117,4 +121,7 @@ function rpclidn_addappsrpm {
 		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
 		--service "setverrel={'version':'false', 'release':'false'}"
 
+	local rpdistro=$(rpclidn_distros | grep $branch)
+	[ -z "$rpdistro" ] && echo "no rpdistro found" && return 1
+	rpclidn applications update --optional-distro $rpdistro -p $project $pkg
 }
