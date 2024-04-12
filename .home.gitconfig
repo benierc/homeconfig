@@ -1,8 +1,8 @@
 [core]
 	excludesfile = ~/.gitglobal/gitignore
     #hooksPath = /home/clement/.gitglobal/hooks/
-[commit]
-    gpgsign = true
+#[commit]
+#    gpgsign = true
 [gitreview]
 	username = benierc
 #[i18n]
