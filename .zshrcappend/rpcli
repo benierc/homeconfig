@@ -115,13 +115,13 @@ function rpclidn_addappsrpm {
 	[[ "$(echo $url | awk -F '/' '{print $4}')" == "redhat" ]] && rhelversion=$(echo "$url" | awk -F '/' '{print $6}')
 	[ "$rhelversion" ] && tag="import-$rhelversion/$srpm"
 
+	local rpdistro=$(rpclidn_distros | grep $branch)
+	[ -z "$rpdistro" ] && echo "no rpdistro found" && return 1
+
 	rpclidn applications add --project $project --name $pkg --pkg-name $pkg \
 		--active-branch=$branch \
 		--build-type=accel_build_cross \
+		--optional-distro $rpdistro \
 		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
 		--service "setverrel={'version':'false', 'release':'false'}"
-
-	local rpdistro=$(rpclidn_distros | grep $branch)
-	[ -z "$rpdistro" ] && echo "no rpdistro found" && return 1
-	rpclidn applications update --optional-distro $rpdistro -p $project $pkg
 }
