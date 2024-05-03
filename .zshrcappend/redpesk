@@ -162,7 +162,7 @@ function mock_stack {
 function builders_cmd {
 	domainname=$1; shift
 
-	(set -x; ssh root@$domainname-hub $@)
+	(set -x; ssh root@$domainname-kojihub $@)
 	echo
 	i=1
 	while ssh -q root@${domainname}-builder-1$i echo > /dev/null; do

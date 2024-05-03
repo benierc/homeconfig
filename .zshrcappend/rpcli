@@ -11,6 +11,10 @@ export PATH="${DIR_REDPESKCLI}:$PATH"
 
 fpath=($DIR_REDPESKCLI $fpath)
 
+function getpkgname {
+	echo "$@" | tr '[:upper:]' '[:lower:]'
+}
+
 alias rpclif='rp-cli --serveralias factory'
 alias rpclidn='rp-cli --serveralias distro'
 alias rpclic='rp-cli --serveralias community'
@@ -123,5 +127,16 @@ function rpclidn_addappsrpm {
 		--build-type=accel_build_cross \
 		--optional-distro $rpdistro \
 		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
+		--service "setverrel={'version':false, 'release':false}"
+}
+
+
+function rpclidn_setverrelfalse {
+	local branch=$1
+	local project=$2
+	local pkgname=$(getpkgname $3)
+
+	rpclidn applications branch  --project $project $pkgname --destination $branch || return 1
+	rpclidn applications update  --project $project $pkgname \
 		--service "setverrel={'version':false, 'release':false}"
 }
