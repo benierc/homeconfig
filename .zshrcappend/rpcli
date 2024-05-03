@@ -123,5 +123,5 @@ function rpclidn_addappsrpm {
 		--build-type=accel_build_cross \
 		--optional-distro $rpdistro \
 		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
-		--service "setverrel={'version':'false', 'release':'false'}"
+		--service "setverrel={'version':false, 'release':false}"
 }
