@@ -104,32 +104,6 @@ function downloadrpmfromexternalkoji {
 	done
 }
 
-function importfromrocky {
-	mkdir -p /tmp/rockydownloads
-	d=$(mktemp -d -p /tmp/rockydownloads)
-	echo $d
-	cd $d
-
-	local kojirocky="https://koji.rockylinux.org/koji/search?match=glob&type=build&terms="
-	local rhelver=$1
-	local search=$2
-	ssh root@redhat9-test.lorient.iot subscription-manager release --set $rhelver
-	ssh root@redhat9-test.lorient.iot "dnf -q provides '$search' | head -n 1 | awk '{print \$1}' | sed -r 's/(.+)-[^-]+-[^-]+/\1/'"
-	local rpm=$(ssh root@redhat9-test.lorient.iot "dnf -q provides '$search' | head -n 1 | awk '{print \$1}' | sed -r 's/(.+)-[^-]+-[^-]+/\1/'")
-
-	buildid=$(ssh root@redhat9-test.lorient.iot "dnf --available -q info $rpm | grep '^Source' | head -n 1 | awk '{print \$3}'" | sed "s/.src.rpm$//")
-	local kojirockybuild="${kojirocky}${buildid}"
-
-	echo "$kojirockybuild"
-
-	local srpmurl=$(wget -q -O - $kojirockybuild | grep -o "href.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
-
-	local downloadurl=$(dirname $(dirname $srpmurl))
-	echo "$downloadurl"
-
-	downloadrpmfromexternalkoji $downloadurl src noarch x86_64 aarch64
-}
-
 function dnfsilo {
 	local silo="https://silo.redpesk.iot/redhat"
 	local rhelver=$1; shift
@@ -149,4 +123,28 @@ function dnfsilo {
 	done
 
 	dnf ${dnfopts[@]} $@
+}
+
+function importfromrocky {
+	mkdir -p /tmp/rockydownloads
+	d=$(mktemp -d -p /tmp/rockydownloads)
+	echo $d
+	cd $d
+
+	local kojirocky="https://koji.rockylinux.org/koji/search?match=glob&type=build&terms="
+	local rhelver=$1
+	local search=$2
+
+	local buildid=$(dnfsilo $rhelver download --source --url "$search" | tail -n 1 | awk -F '/' '{print $NF}' | sed "s/.src.rpm$//")
+
+	local kojirockybuild="${kojirocky}${buildid}"
+
+	echo "$kojirockybuild"
+
+	local srpmurl=$(wget -q -O - $kojirockybuild | grep -o "href.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
+
+	local downloadurl=$(dirname $(dirname $srpmurl))
+	echo "$downloadurl"
+
+	downloadrpmfromexternalkoji $downloadurl src noarch x86_64 aarch64
 }
