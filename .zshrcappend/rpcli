@@ -1,4 +1,6 @@
 source ~/.zshrcappend/backgrounds
+source ~/.zshrcappend/misc
+
 
 CACHERPCLI=/tmp/rpclicache
 mkdir -p $CACHERPCLI
@@ -110,6 +112,7 @@ function rpclidn_addappsrpm {
 	local project=$1
 	local branch=$2
 	local url=$3
+	local description=$4
 	local srpm=$(basename $url)
 	local pkg=$(echo $srpm | sed -r "s/(.+)-([^-])+-([^-])+/\1/")
 
@@ -122,14 +125,38 @@ function rpclidn_addappsrpm {
 	local rpdistro=$(rpclidn_distros | grep $branch)
 	[ -z "$rpdistro" ] && echo "no rpdistro found" && return 1
 
+	local descarg=()
+	[ "$description" ] && descarg+="--description='$description'"
+
 	rpclidn applications add --project $project --name $pkg --pkg-name $pkg \
 		--active-branch=$branch \
 		--build-type=accel_build_cross \
 		--optional-distro $rpdistro \
+		${descarg[@]} \
 		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
 		--service "setverrel={'version':false, 'release':false}"
 }
 
+function rpclidn_addapp_fromsearch {
+	local rhelver=$1
+	local branch=$2
+	local project=$3
+	local search=$4
+
+	local url=$(dnfsilo $rhelver download --source --url "$search" | tail -n 1)
+
+	local pkgname=$(echo $url | awk -F '/' '{print $NF}' | sed -r "s/-[^-]+-[^-]+.src.rpm$//")
+	local summary=$(dnfsilo $rhelver info $pkgname | grep Summary | tail -n 1 | awk -F ': ' '{print $2}')
+
+	echo "pkgname=$pkgname"
+	echo "description=$summary"
+	echo "url=$url [Y/n]"
+	local ok=
+	read ok
+	[[ "$ok" == "n" ]] && return 1
+
+	rpclidn_addappsrpm $project $branch $url ''"$summary"''
+}
 
 function rpclidn_setverrelfalse {
 	local branch=$1
