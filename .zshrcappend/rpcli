@@ -126,7 +126,7 @@ function rpclidn_addappsrpm {
 	[ -z "$rpdistro" ] && echo "no rpdistro found" && return 1
 
 	local descarg=()
-	[ "$description" ] && descarg+="--description='$description'"
+	[ "$description" ] && descarg+="--description=$description"
 
 	rpclidn applications add --project $project --name $pkg --pkg-name $pkg \
 		--active-branch=$branch \
@@ -166,4 +166,19 @@ function rpclidn_setverrelfalse {
 	rpclidn applications branch  --project $project $pkgname --destination $branch || return 1
 	rpclidn applications update  --project $project $pkgname \
 		--service "setverrel={'version':false, 'release':false}"
+}
+
+function rpclidn_updatepj_desc {
+	local rhelver=$1
+	local project=$2
+
+	local IFS=$'\n'; for app in $(_rpclidn applications list --project $project | tail -n +2); do
+		echo $app
+		local appid=$(echo $app | awk '{print $1}')
+		local slug=$(echo $app | awk '{print $3}')
+		local summary=$(dnfsilo $rhelver info $slug | grep Summary | tail -n 1 | awk -F ': ' '{print $2}')
+
+		echo "found for slug=$slug summary=$summary"
+		rpclidn applications update $appid --description ''"$summary"''
+	done
 }
