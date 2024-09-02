@@ -120,7 +120,7 @@ function rpclidn_addappsrpm {
 	local tag=
 
 	[[ "$(echo $url | awk -F '/' '{print $4}')" == "redhat" ]] && rhelversion=$(echo "$url" | awk -F '/' '{print $6}')
-	[ "$rhelversion" ] && tag="import-$rhelversion/$srpm"
+	[ "$rhelversion" ] && tag="$(echo import-$rhelversion/$srpm | tr '^' '_')"
 
 	local rpdistro=$(rpclidn_distros | grep $branch)
 	[ -z "$rpdistro" ] && echo "no rpdistro found" && return 1

@@ -91,7 +91,7 @@ function start_qemu {
  		-hda $IMAGE \
  		-m 2048 \
  		-smp 4 \
- 		-device virtio-rng-pci \
+		-device virtio-rng-pci \
 		$(echo ${Q_DISPLAY}) \
 	    -serial mon:stdio \
  		-net nic \
