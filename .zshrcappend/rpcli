@@ -182,3 +182,32 @@ function rpclidn_updatepj_desc {
 		rpclidn applications update $appid --description ''"$summary"''
 	done
 }
+
+function rpclidn_get_align_branches {
+	local project=$1
+	local app=$2
+
+	rpclidn --rawoutput applications get $app -p $project -v | jq -r '.services.branch_alignment.parameters.branches.value.[]' | tr '\n' ' '
+}
+
+function rpclidn_set_align_branches {
+	local br_ref=$1
+	local br=$2
+	local project=$3
+	local app=$4
+
+	# start by switching active branch
+	rpclidn applications update $app -p $project --active-branch $br_ref
+
+	local br_str=
+	for b in $(rpclidn_get_align_branches $project $app); do
+
+		[[ "$b" == "$br" ]] && echo "br=$b already set, abort" && return 1
+		br_str="${br_str}'${b}',"
+	done
+	br_str="${br_str}'${br}'"
+
+	echo "new align branches are [$br_str]"
+	rpclidn applications update $app -p $project --service "branch_alignment={'branches':[${br_str}]}"
+	return 0
+}
