@@ -1,0 +1,13 @@
+source ~/gitlabtokengitovhiot
+
+function _gcurl {
+	curl -s --header "PRIVATE-TOKEN: ${GITOVHPRIVATETOKEN}" \
+		https://git.ovh.iot/api/v4/$@
+}
+
+
+
+function search_git_url {
+	local search=$1
+	_gcurl "search?per_page=100&scope=projects&search=${search}" | jq -r '.[].ssh_url_to_repo' | fzf
+}
