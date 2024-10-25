@@ -53,6 +53,7 @@ function start_qemu {
 	ROOT_PATH="LABEL=rootfs"
 	SSH_PORT=3333
 	local Q_DISPLAY="-display none"
+	local MACADDR=
 
 	local QEMU_ARGS=()
 	while [ "$1" ]; do
@@ -62,6 +63,9 @@ function start_qemu {
 				;;
 			-r | --rootpath) shift
 				ROOT_PATH=$1
+				;;
+			-m | --macaddr) shift
+				MACADDR=",macaddr=$1"
 				;;
 			-s | --security) shift
 				SECURITY=$1
@@ -94,7 +98,7 @@ function start_qemu {
 		-device virtio-rng-pci \
 		$(echo ${Q_DISPLAY}) \
 	    -serial mon:stdio \
- 		-net nic \
+ 		-net nic${MACADDR} \
  		-net user,hostfwd=tcp::${SSH_PORT}-:22 \
  		${QEMU_ARGS[@]} \
  		-append 'console='"$CONSOLE"' cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 rw rootwait security='"${SECURITY}"' root='"${ROOT_PATH}"' '"${EXTRA_ARGS}"' loglevel=7'
