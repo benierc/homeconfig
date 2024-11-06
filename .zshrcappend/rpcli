@@ -112,9 +112,11 @@ function rpclidn_addappsrpm {
 	local project=$1
 	local branch=$2
 	local url=$3
-	local description=$4
+	local description=$(rpm -q $url --queryformat "%{DESCRIPTION}\n")
+	echo "description=$description"
 	local srpm=$(basename $url)
 	local pkg=$(echo $srpm | sed -r "s/(.+)-([^-])+-([^-])+/\1/")
+
 
 	local rhelversion=
 	local tag=
@@ -146,16 +148,14 @@ function rpclidn_addapp_fromsearch {
 	local url=$(dnfsilo $rhelver download --source --url "$search" | tail -n 1)
 
 	local pkgname=$(echo $url | awk -F '/' '{print $NF}' | sed -r "s/-[^-]+-[^-]+.src.rpm$//")
-	local summary=$(dnfsilo $rhelver info $pkgname | grep Summary | tail -n 1 | awk -F ': ' '{print $2}')
 
 	echo "pkgname=$pkgname"
-	echo "description=$summary"
 	echo "url=$url [Y/n]"
 	local ok=
 	read ok
 	[[ "$ok" == "n" ]] && return 1
 
-	rpclidn_addappsrpm $project $branch $url ''"$summary"''
+	rpclidn_addappsrpm $project $branch $url
 }
 
 function rpclidn_setverrelfalse {
