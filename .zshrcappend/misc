@@ -5,6 +5,13 @@ alias getfattrall='getfattr -d -m -'
 
 alias fzfspace='tr " " "\n" | fzf'
 
+alias manfr='man --locale=fr'
+
+function logcmd {
+	print "> $*" >&2
+	command "$*"
+}
+
 function wgetwildcard {
 	wget -q -r -nd -nc --no-parent -A $@
 }
@@ -109,6 +116,9 @@ function dnfsilo {
 	local rhelver=$1; shift
 
 	local vermajor=${rhelver%%.*}
+
+	[[ "$rhelver" =~ "\.epel$" ]] && rhelver=epel
+
 	local url=$silo/$vermajor/$rhelver
 
 	local installroot=/tmp/dnfsilo/$vermajor-$rhelver
@@ -122,6 +132,7 @@ function dnfsilo {
 		dnfopts+="--repo=$repo"
 	done
 
+	#logcmd dnf ${dnfopts[@]} $@
 	dnf ${dnfopts[@]} $@
 }
 
