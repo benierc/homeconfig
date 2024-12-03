@@ -105,7 +105,7 @@ function start_qemu {
  }
 
 function qemu_grub {
-	OVMF="/usr/share/OVMF/x64/OVMF_CODE.fd"
+	OVMF="/usr/share/OVMF/x64/OVMF.4m.fd"
 	SSH_PORT=4444
 	ssh-keygen -R "[localhost]:${SSH_PORT}" || :
 
@@ -121,7 +121,7 @@ function qemu_grub {
 	    -serial mon:stdio \
 	    -serial null \
 	    -net nic \
-	    -net user,hostfwd=tcp::$PORT_SSH-:22 \
+	    -net user,hostfwd=tcp::$SSH_PORT-:22 \
 	    -bios $OVMF
 }
 
