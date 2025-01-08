@@ -24,6 +24,10 @@ function pip3install {
 	pip3 --user $@
 }
 
+function zshfunctions {
+	whence -f $(print -l ${(k)functions} | grep -v "^_" | fzf)
+}
+
 alias oscl='osc -A https://obs.lorient.iot'
 
 function downloadrpms {
