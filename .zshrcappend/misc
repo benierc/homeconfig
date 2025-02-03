@@ -110,6 +110,7 @@ function downloadrpmfromexternalkoji {
 	for arch in $(echo $arches); do
 		for rpm in $(wget -qO- $url/$arch | grep -Eo ">(\w|-|\.)+.rpm" | sed "s/>//"); do
 			echo "$rpm"
+			echo "wget -q $url/$arch/$rpm"
 			wget -q $url/$arch/$rpm
 		done
 	done
