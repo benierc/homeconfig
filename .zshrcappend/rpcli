@@ -19,6 +19,7 @@ function getpkgname {
 
 alias rpclif='rp-cli --serveralias factory'
 alias rpclidn='rp-cli --serveralias distro'
+alias rpclipp='rp-cli --serveralias preprod'
 alias rpclic='rp-cli --serveralias community'
 alias rpclithales='rp-cli --serveralias thales'
 
