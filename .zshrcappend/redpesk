@@ -174,7 +174,7 @@ function builders_cmd {
 
 function builders_dnf {
 	builder=$1; shift
-	builders_cmd $builder dnf --repo obs,obst --repofrompath obs,http://obs.lorient.iot:82/redpesk:/Factory:/next:/AlmaLinux_8/AlmaLinux_8/ --nogpgcheck --repofrompath obst,http://obs.lorient.iot:82/redpesk:/Factory:/next:/AlmaLinux_8_third_party/AlmaLinux_8 --nogpgcheck $@
+	builders_cmd $builder "source /etc/os-release && dnf --repo obs,obst --repofrompath obs,http://obs.lorient.iot:82/redpesk:/Factory:/next:/AlmaLinux_\${VERSION_ID%%.*}/AlmaLinux_\${VERSION_ID%%.*}/ --nogpgcheck --repofrompath obst,http://obs.lorient.iot:82/redpesk:/Factory:/next:/AlmaLinux_\${VERSION_ID%%.*}_third_party/AlmaLinux_\${VERSION_ID%%.*} --nogpgcheck $*"
 }
 
 function redpeskdistro_cmd {
