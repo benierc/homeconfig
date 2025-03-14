@@ -1,6 +1,8 @@
 # comment because issue with autosugestion
 # setopt shwordsplit
 
+alias thespottobe='xdg-open https://thespot2be.com/getSpotPrevDep/Surf/56/14/$(date +"%d/%m/%Y")'
+
 alias getfattrall='getfattr -d -m -'
 
 alias fzfspace='tr " " "\n" | fzf'
