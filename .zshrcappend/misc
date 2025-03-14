@@ -14,6 +14,11 @@ function logcmd {
 	command "$*"
 }
 
+function sshagent {
+	eval $(ssh-agent -s)
+	ssh-add ~/.ssh/id_rsa
+}
+
 function wgetwildcard {
 	wget -q -r -nd -nc --no-parent -A $@
 }
