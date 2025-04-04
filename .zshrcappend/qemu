@@ -11,7 +11,7 @@ function get_initrd {
 function start_qemu_x86_64 {
 	QEMU_ARCH=x86_64
 	CONSOLE=ttyS0
-	start_qemu $@ -enable-kvm -cpu kvm64 -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+popcnt -initrd $(get_initrd)
+	start_qemu $@ -enable-kvm -cpu kvm64 -cpu Skylake-Client-v4 -initrd $(get_initrd)
 }
 
 function start_qemu_aarch64 {
