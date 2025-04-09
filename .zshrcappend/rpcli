@@ -213,3 +213,54 @@ function rpclidn_set_align_branches {
 	rpclidn applications update $app -p $project --service "branch_alignment={'branches':[${br_str}]}"
 	return 0
 }
+
+function rpclidn_remove_align_branches {
+	local br_ref=$1
+	local br=$2
+	local project=$3
+	local app=$4
+
+	# start by switching active branch
+	rpclidn applications update $app -p $project --active-branch $br_ref || return 1
+
+	local found_br=
+	local br_str=
+	for b in $(rpclidn_get_align_branches $project $app); do
+
+		[[ "$b" == "$br" ]] && echo "found br=$br" && found_br=1 && continue
+		br_str="${br_str}'${b}',"
+	done
+
+	[ -z "$found_br" ] && echo "no br=$br found, abort" && return 1
+
+	br_str="${br_str::-1}"
+	echo "new align branches are [$br_str]"
+	rpclidn applications update $app -p $project --service "branch_alignment={'branches':[${br_str}]}"
+	return 0
+}
+
+function rpclidn_set_align_branches_projects {
+	local br_ref=$1; shift
+	local br=$1; shift
+	local projects="$@"
+
+	for pj in $(echo $projects); do
+		for app in $(rpclidn_listapps $pj); do
+			echo "app=$app align branch br_ref=$br_ref br=$br"
+			rpclidn_set_align_branches $br_ref $br $pj $app
+		done
+	done
+}
+
+function rpclidn_remove_align_branches_projects {
+	local br_ref=$1; shift
+	local br=$1; shift
+	local projects="$@"
+
+	for pj in $(echo $projects); do
+		for app in $(rpclidn_listapps $pj); do
+			echo "app=$app remove align branch"
+			rpclidn_remove_align_branches $br_ref $br $pj $app
+		done
+	done
+}
