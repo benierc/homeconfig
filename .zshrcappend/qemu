@@ -89,11 +89,10 @@ function start_qemu {
 
 	ssh-keygen -R "[localhost]:${SSH_PORT}" || :
 
-	local IMAGE=$(get_image)
  	set -x
  	qemu-system-${QEMU_ARCH} \
  		-kernel $(ls | grep -E "vmlinuz|Image|kernel") \
- 		-hda $IMAGE \
+ 		-hda $(get_image) \
  		-m 2048 \
  		-smp 4 \
 		-device virtio-rng-pci \
