@@ -1,11 +1,12 @@
 source ~/.zshrcappend/nettools
 
 function get_image {
- 	ls | grep -E "^(redpesk.raw|Redpesk-OS.img)$"
+ 	ls | grep -E "^(image.raw|redpesk.raw|Redpesk-OS.img)$"
 }
 
 function get_initrd {
-	ls | grep -E "initramfs" || virt-get-kernel -a Redpesk-OS.img &> /dev/null
+	local image=$(get_image)
+	ls | grep -E "initramfs" || virt-get-kernel -a ${image} &> /dev/null
 }
 
 function start_qemu_x86_64 {
@@ -111,7 +112,7 @@ function qemu_grub {
 
 	echo ok
 	qemu-system-x86_64 \
-	    -hda "Redpesk-OS.img" \
+	    -hda $(get_image) \
 	    -enable-kvm -m 2048 \
 	    -cpu kvm64 \
 	    -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+popcnt \
