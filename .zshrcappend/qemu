@@ -1,12 +1,12 @@
 source ~/.zshrcappend/nettools
 
 function get_image {
- 	ls | grep -E "^(image.raw|redpesk.raw|Redpesk-OS.img)$"
+	ls | grep -E "^(image.raw|redpesk.raw|Redpesk-OS.img)$" | head -n 1
 }
 
 function get_initrd {
 	local image=$(get_image)
-	ls | grep -E "initramfs" || virt-get-kernel -a ${image} &> /dev/null
+	ls | grep -E "initramfs|initrd" | head -n 1 || virt-get-kernel -a ${image} &> /dev/null
 }
 
 function start_qemu_x86_64 {
