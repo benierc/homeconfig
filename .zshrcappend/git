@@ -30,3 +30,8 @@ function gitarchive {
 	git archive --prefix=$name-$version/ -o ../$name-$version.tar.gz $ref
 	cd ..
 }
+
+function gittaga {
+	local version=$1; shift
+	git tag -a -m "Version $version" $version $@
+}
