@@ -82,16 +82,19 @@ function start_qemu {
 		shift
 	done
 
+	(
+	set -x
  	# be sure SSH_PORT is available
  	while nc localhost $SSH_PORT -w 1; do
         SSH_PORT=$((SSH_PORT+1))
  	done
+	)
 
 	ssh-keygen -R "[localhost]:${SSH_PORT}" || :
 
  	set -x
  	qemu-system-${QEMU_ARCH} \
- 		-kernel $(ls | grep -E "vmlinuz|Image|kernel") \
+ 		-kernel $(ls | grep -E "linux|vmlinuz|Image|kernel") \
  		-hda $(get_image) \
  		-m 2048 \
  		-smp 4 \
@@ -109,12 +112,12 @@ function qemu_grub {
 	SSH_PORT=4444
 	ssh-keygen -R "[localhost]:${SSH_PORT}" || :
 
-	echo ok
+	set -x
 	qemu-system-x86_64 \
 	    -hda $(get_image) \
 	    -enable-kvm -m 2048 \
 	    -cpu kvm64 \
-	    -cpu qemu64,+ssse3,+sse4.1,+sse4.2,+popcnt \
+		-cpu Skylake-Client-v4 \
 	    -smp 4 \
 	    -vga virtio \
 	    -device virtio-rng-pci \

@@ -44,20 +44,15 @@ alias kojidn='koji -c ~/.kojidn/config'
 
 function kojidn_importrpmstag {
 	local buildids=
-	local newer=
 	local pkgname=
-	local buildids=$(kojidn import --create-build *.rpm | grep "Creating empty build" | awk '{print $4}')
-	for buildid in $buildids; do
-		echo $buildid
-		[ "$newer" ] || newer=$buildid
-		rpmdev-vercmp $newer $buildid &> /dev/null
-		res=$?
-		[ $res -eq 11 ] || newer=$buildid
+
+	kojidn import --create-build *.rpm
+	buildids=$(rpm -qp --qf '%{SOURCERPM}\n' *.rpm | grep -v "(none)" | uniq | sed 's/\.src\.rpm$//g')
+	for buildid in $(echo $buildids); do
+		local pkgname=$(echo $buildids | sed -r "s/-[^-]+-[^-]+$//")
+		#kojidn add-pkg --owner=clement $1 $pkgname
+		kojidn tag-build --nowait $1 $buildid
 	done
-	local pkgname=$(echo $newer | sed -r "s/-[^-]+-[^-]+$//")
-	echo "newer is $newer pkgname=$pkgname"
-	kojidn add-pkg --owner=clement $1 $pkgname
-	kojidn tag-build --nowait $1 $newer
 }
 
 function kojidn_reset {
@@ -98,4 +93,24 @@ function entermockhub {
 	set -x
 	ssh $sshdomain runuser -u kojibuilder -- mock -r koji/$mockname install vim
 	ssh -t $sshdomain runuser -u kojibuilder -- mock -r koji/$mockname --shell
+}
+
+function importfromrootlog {
+	local rhelver=$1
+	[ -z $rhelver ] && echo "no rhelver given, aborting..." && return 1
+	local importtag=$2
+
+	local rhelversuf=el${rhelver%%.*}
+
+	local listpkgs=$(cat root.log | grep "${rhelversuf}" | awk '{print $3}' | sed -r "s#-[^-]+-[^-]+${rhelversuf}[^-]+\$##" | uniq | sort -u)
+
+	mkdir -p rpms
+	rpmdir=$(pwd)/rpms
+
+	for pkg in $(echo $listpkgs); do
+		echo "pkg=$pkg"
+		importfromrocky $rhelver $pkg $rpmdir
+	done
+
+	#kojidn_importrpmstag $importtag
 }

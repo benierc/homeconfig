@@ -133,7 +133,7 @@ function rpclidn_addappsrpm {
 	[ "$description" ] && descarg+="--description=$description"
 
 	rpclidn applications add --project $project --name $pkg --pkg-name $pkg \
-		--active-branch=$branch \
+		--package-active-branch=$branch \
 		--build-type=accel_build_cross \
 		--optional-distro $rpdistro \
 		${descarg[@]} \
@@ -199,7 +199,7 @@ function rpclidn_set_align_branches {
 	local app=$4
 
 	# start by switching active branch
-	rpclidn applications update $app -p $project --active-branch $br_ref
+	rpclidn applications update $app -p $project --package-active-branch $br_ref
 
 	local br_str=
 	for b in $(rpclidn_get_align_branches $project $app); do
@@ -221,7 +221,7 @@ function rpclidn_remove_align_branches {
 	local app=$4
 
 	# start by switching active branch
-	rpclidn applications update $app -p $project --active-branch $br_ref || return 1
+	rpclidn applications update $app -p $project --package-active-branch $br_ref || return 1
 
 	local found_br=
 	local br_str=

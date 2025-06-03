@@ -115,7 +115,8 @@ function downloadrpmfromexternalkoji {
 	url=$1; shift
 	arches=$@
 	for arch in $(echo $arches); do
-		for rpm in $(wget -qO- $url/$arch | grep -Eo ">(\w|-|\.)+.rpm" | sed "s/>//"); do
+		for rpm in $(wget -qO- $url/$arch | grep -Eo ">(\w|\+|-|\.)+.rpm" | sed "s/>//"); do
+			[ -f $rpm ] && echo "$rpm exist, no redownload" && continue
 			echo "$rpm"
 			echo "wget -q $url/$arch/$rpm"
 			wget -q $url/$arch/$rpm
@@ -157,6 +158,9 @@ function importfromrocky {
 	local kojirocky="https://koji.rockylinux.org/koji/search?match=glob&type=build&terms="
 	local rhelver=$1
 	local search=$2
+	# optionnal
+	local dest=$3
+	[ "$dest" ] && cd $dest
 
 	local buildid=$(dnfsilo $rhelver download --source --url "$search" | tail -n 1 | awk -F '/' '{print $NF}' | sed "s/.src.rpm$//")
 
@@ -164,7 +168,7 @@ function importfromrocky {
 
 	echo "$kojirockybuild"
 
-	local srpmurl=$(wget -q -O - $kojirockybuild | grep -o "href.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
+	local srpmurl=$(wget -q -O - $kojirockybuild | grep -o "href=\"http.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
 
 	local downloadurl=$(dirname $(dirname $srpmurl))
 	echo "$downloadurl"
