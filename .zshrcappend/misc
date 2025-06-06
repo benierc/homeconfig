@@ -164,6 +164,8 @@ function importfromrocky {
 
 	local buildid=$(dnfsilo $rhelver download --source --url "$search" | tail -n 1 | awk -F '/' '{print $NF}' | sed "s/.src.rpm$//")
 
+	[ -z "${buildid}" ] && echo "no buildid found for $search" && return 1
+
 	local kojirockybuild="${kojirocky}$(echo ${buildid} | jq -sRr @uri)"
 
 	echo "$kojirockybuild"

@@ -104,6 +104,7 @@ function importpkgs {
 	rpmdir=$(pwd)/rpms
 
 	for pkg in $(echo $pkgs); do
+		pkg=$(echo $pkg | sed "s/---/ /g")
 		echo "pkg=$pkg"
 		importfromrocky $rhelver $pkg $rpmdir
 	done
@@ -121,4 +122,47 @@ function importfromrootlog {
 	local listpkgs=$(cat root.log | grep "${rhelversuf}" | awk '{print $3}' | sed -r "s#-[^-]+-[^-]+${rhelversuf}[^-]+\$##" | uniq | sort -u)
 
 	importpkgs $rhelver $importtag $listpkgs
+}
+
+function importfromunresolvable {
+	local rhelver=$1
+	local importtag=$2
+	local unr_string="$3"
+	local unr_string_fixed=$(echo $unr_string | sed -r 's/Unresolvable: //'| sed 's/ (code: -1)//' |  sed -r 's/, /,/g'  | sed -r 's/ /---/g' | sed 's/,/ /g')
+
+	importpkgs $rhelver $importtag "$unr_string_fixed"
+}
+
+function kojidn_resetimportbuildifok {
+	local rhelver=$1
+	local redver=$2
+	local pkg=$3
+
+
+	local pkgid=$(kojidn call --json-output getPackage $pkg | jq -r '.id')
+	local nvrs=$(kojidn call --json-output listBuilds packageID=$pkgid | jq -r '.[] | select(.state == 1) | .nvr')
+
+	local nvrimport=$(echo $nvrs | grep $rhelver)
+	local nvrredpesk=$(echo $nvrs | grep $redver)
+
+	echo "pkgid=$pkgid nvrimport=$nvrimport nvrredpesk=$nvrredpesk"
+
+	[ -z "$nvrimport" ] && return 0
+	[ -z "$nvrredpesk" ] && return 0
+
+	echo "https://distro-app-next.lorient.iot/koji/packageinfo?packageID=$pkgid"
+	echo -n "kojidn call resetBuild $nvrimport [y/N]?"
+	read yn
+	[[ "$yn" == "y" ]] && kojidn call resetBuild $nvrimport
+}
+
+function kojidn_resetimportbuildifok_forall {
+	local tag=$1
+	local rhelver=$2
+	local redver=$3
+	local pkg=
+	for buildid in $(kojidn -q list-tagged $tag | awk '{print $1}'); do
+		pkg=$(echo $buildid | sed -r "s/-[^-]+-[^-]+$//")
+		kojidn_resetimportbuildifok $rhelver $redver $pkg
+	done
 }
