@@ -265,3 +265,22 @@ function rpclidn_remove_align_branches_projects {
 		done
 	done
 }
+
+function rpclidn_add_appimported {
+	local tag=$1
+	local rhelver=$2
+	local branch=$3
+	local project=$4
+
+	local findpkg=
+	for pkg in $(kojidn -q list-tagged $tag | awk '{print $1}' | sed -r 's/(.*)-[^-]+-[^-]+/\1/'); do
+		findpkg=
+		for pj in baseos apps apps-rocky; do
+			rpclidn applications get $pkg --project $pj &> /dev/null && findpkg=$pj
+		done
+		[ "$findpkg" ] && echo "find pkg=$pkg in project=$findpkg" && continue
+
+		echo "pkg=$pkg not found"
+		rpclidn_addapp_fromsearch $rhelver $branch $project $pkg
+	done
+}
