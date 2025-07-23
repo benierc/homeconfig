@@ -22,7 +22,7 @@ function start_qemu_aarch64 {
 	local QEMU_ARGS=()
 	bsp_1="renesas-gen3"
 	bsp_2="imx8|solidrun-edge-gateways|solidrun-hummingboard"
-	bsp_3="rpi|layerscape"
+	bsp_3="rpi|layerscape|beagleplay|quick-boot-beagleplay"
 	bsps=$(echo "$bsp_1|$bsp_2|$bsp_3")
 	echo $bsps
 

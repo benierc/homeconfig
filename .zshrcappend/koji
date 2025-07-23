@@ -63,11 +63,11 @@ function kojidn_reset {
 
 function kojidn_cancel {
 	local reg=$1
-	to_cancel=
+	to_cancel=()
 	for i in $(kojidn -q list-tasks | grep "$reg"| awk '{print $1}'); do
-		to_cancel="$to_cancel $i"
+		to_cancel+="$i"
 	done
-	[ "$to_cancel" ] && kojidn cancel $to_cancel
+	[ "$to_cancel" ] && kojidn cancel "${to_cancel[@]}"
 }
 
 function kojidn_taginfo {
