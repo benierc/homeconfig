@@ -41,6 +41,7 @@ function rpclidn_build {
 
 alias rpclidnbuildbatz='rpclidn_build redpesk-lts-batz-2.0-update'
 alias rpclidnbuildbatz21='rpclidn_build redpesk-lts-batz-2.1-update'
+alias rpclidnbuildbatz22='rpclidn_build redpesk-lts-batz-2.2-update'
 alias rpclidnbuildarz11='rpclidn_build redpesk-lts-arz-1.1'
 alias rpclidnbuildautosd='rpclidn_build redpesk-autosd-9'
 alias rpclidnbuildcorn='rpclidn_build redpesk-lts-corn-3.0-update'
