@@ -81,7 +81,7 @@ function rpclidn_remove_optionnal_distro {
 
 function rpclidn_listapps {
 	local project=$1
-	_rpclidn --nopager applications list -p $project | tail -n+2 | awk '{print $2}'
+	_rpclidn --nopager --rawoutput applications list -p $project | jq -r '.[].slug'
 }
 
 function rpclidn_listappsuuid {
@@ -199,9 +199,6 @@ function rpclidn_set_align_branches {
 	local project=$3
 	local app=$4
 
-	# start by switching active branch
-	rpclidn applications update $app -p $project --package-active-branch $br_ref
-
 	local br_str=
 	for b in $(rpclidn_get_align_branches $project $app); do
 
@@ -211,7 +208,7 @@ function rpclidn_set_align_branches {
 	br_str="${br_str}'${br}'"
 
 	echo "new align branches are [$br_str]"
-	rpclidn applications update $app -p $project --service "branch_alignment={'branches':[${br_str}]}"
+	rpclidn applications update $app --package-active-branch $br_ref -p $project --service "branch_alignment={'branches':[${br_str}]}"
 	return 0
 }
 
@@ -220,9 +217,6 @@ function rpclidn_remove_align_branches {
 	local br=$2
 	local project=$3
 	local app=$4
-
-	# start by switching active branch
-	rpclidn applications update $app -p $project --package-active-branch $br_ref || return 1
 
 	local found_br=
 	local br_str=
@@ -236,7 +230,7 @@ function rpclidn_remove_align_branches {
 
 	br_str="${br_str::-1}"
 	echo "new align branches are [$br_str]"
-	rpclidn applications update $app -p $project --service "branch_alignment={'branches':[${br_str}]}"
+	rpclidn applications update $app -p $project --package-active-branch $br_ref --service "branch_alignment={'branches':[${br_str}]}"
 	return 0
 }
 

@@ -173,8 +173,9 @@ function builders_cmd {
 }
 
 function builders_dnf {
-	builder=$1; shift
-	builders_cmd $builder "source /etc/os-release && dnf --repo obs,obst --repofrompath obs,http://obs.lorient.iot:82/redpesk:/Factory:/next:/AlmaLinux_\${VERSION_ID%%.*}/AlmaLinux_\${VERSION_ID%%.*}/ --nogpgcheck --repofrompath obst,http://obs.lorient.iot:82/redpesk:/Factory:/next:/AlmaLinux_\${VERSION_ID%%.*}_third_party/AlmaLinux_\${VERSION_ID%%.*} --nogpgcheck $*"
+	local builder=$1; shift
+	local version=$1; shift
+	builders_cmd $builder "source /etc/os-release && dnf --repo obs,obst --repofrompath obs,http://obs.lorient.iot:82/redpesk:/Factory:/${version}:/AlmaLinux_\${VERSION_ID%%.*}/AlmaLinux_\${VERSION_ID%%.*}/ --nogpgcheck --repofrompath obst,http://obs.lorient.iot:82/redpesk:/Factory:/${version}:/AlmaLinux_\${VERSION_ID%%.*}_third_party/AlmaLinux_\${VERSION_ID%%.*} --nogpgcheck $*"
 }
 
 function redpeskdistro_cmd {
@@ -185,12 +186,20 @@ function redpeskfactory_cmd {
 	builders_cmd factory-test01 $@
 }
 
+function redpeskpreprod_cmd {
+	builders_cmd factory-preprod01 $@
+}
+
 function redpeskdistro_dnfobs {
-	builders_dnf distro-prod02 $@
+	builders_dnf distro-prod02 next $@
 }
 
 function redpeskfactory_dnfobs {
-	builders_dnf factory-test01 $@
+	builders_dnf factory-test01 next $@
+}
+
+function redpeskpreprod_dnfobs {
+	builders_dnf factory-preprod01 master $@
 }
 
 function distro_open_port {

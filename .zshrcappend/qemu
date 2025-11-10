@@ -125,6 +125,7 @@ function qemu_grub {
 	    -serial null \
 	    -net nic \
 	    -net user,hostfwd=tcp::$SSH_PORT-:22 \
+		-display none \
 	    -bios $OVMF
 }
 
