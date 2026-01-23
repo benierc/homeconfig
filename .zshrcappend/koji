@@ -166,3 +166,36 @@ function kojidn_resetimportbuildifok_forall {
 		kojidn_resetimportbuildifok $rhelver $redver $pkg
 	done
 }
+
+function yad_kojidn_cancels {
+	local fields=()
+	local tmpfile=$(mktemp)
+	rm -f $tmpfile
+
+	fields+="--field"
+	fields+="cancel:BTN"
+	fields+="sh -c 'echo > $tmpfile'"
+
+	local IFS=$'\n'; for t in $(kojidn -q list-tasks); do
+		taskid=$(echo $t | awk '{print $1}')
+		fields+="--field"
+		fields+="$t:BTN"
+		fields+="sh -c 'echo $taskid > $tmpfile'"
+	done
+
+	yad --no-buttons --skip-taskbar --undecorated  --form --align=left --align-buttons "${fields[@]}" &
+	local _pid=$!
+
+	while [ ! -f "$tmpfile" ]; do
+		sleep 0.1
+	done
+
+	local task=($(<"$tmpfile"))
+	[ "$task" ] && (
+		set -x
+		kojidn cancel $task
+	)
+
+	kill $_pid
+	rm -f $tmpfile
+}

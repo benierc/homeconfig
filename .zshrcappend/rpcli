@@ -133,13 +133,27 @@ function rpclidn_addappsrpm {
 	local descarg=()
 	[ "$description" ] && descarg+="--description=$description"
 
-	rpclidn applications add --project $project --name $pkg --pkg-name $pkg \
-		--package-active-branch=$branch \
-		--build-type=accel_build_cross \
-		--optional-distro $rpdistro \
-		${descarg[@]} \
-		--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
-		--service "setverrel={'version':false, 'release':false}"
+	if ! rpclidn applications get --project $project $pkg; then
+		(
+			set -x
+			rpclidn applications add --project $project --name $pkg --pkg-name $pkg \
+				--package-active-branch=$branch \
+				--build-type=accel_build_cross \
+				--optional-distro $rpdistro \
+				${descarg[@]} \
+				--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
+				--service "setverrel={'version':false, 'release':false}"
+		)
+	else
+		rpclidn_append_optionnal_distro $rpdistro $project $pkg
+
+		(
+			set -x
+			rpclidn applications update --project $project $pkg \
+				--service "import_srpm={'url':'$url', 'tag':'$tag', 'branch':'$branch'}" \
+				--service "setverrel={'version':false, 'release':false}"
+		)
+	fi
 }
 
 function rpclidn_addapp_fromsearch {

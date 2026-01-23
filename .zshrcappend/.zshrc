@@ -78,7 +78,7 @@ ZSH_CUSTOM=~/.zsh_custom
 
 #plugins=(git autojump vi-mode git-prompt zsh-autosuggestions fzf)
 #plugins=(git autojump vi-mode zsh-autosuggestions fzf)
-plugins=(git autojump zsh-autosuggestions fzf gitfast)
+plugins=(git autojump zsh-autosuggestions fzf gitfast nmap k9s fast-syntax-highlighting)
 
 alias grep='grep --color'
 alias egrep='grep -E'
