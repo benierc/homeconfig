@@ -22,6 +22,7 @@ alias rpclidn='rp-cli --serveralias distro'
 alias rpclipp='rp-cli --serveralias preprod'
 alias rpclic='rp-cli --serveralias community'
 alias rpclithales='rp-cli --serveralias thales'
+alias rpclia='rp-cli --serveralias aquarium'
 
 function _rpcli_ {
 	echo "+ rp-cli $*" >&2
@@ -30,6 +31,7 @@ function _rpcli_ {
 
 alias _rpclif='_rpcli_ --serveralias factory'
 alias _rpclidn='_rpcli_ --serveralias distro'
+alias _rpclia='_rpcli_ --serveralias aquarium'
 alias _rpclic='_rpcli_ --serveralias community'
 alias _rpclithales='_rpcli_ --serveralias thales'
 

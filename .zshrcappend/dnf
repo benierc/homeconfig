@@ -1,0 +1,9 @@
+
+function dnfrepofrompath {
+	local repo=$1; shift
+	repo=$(echo "$repo" | sed 's/distro-hub-prod02.redpesk.onprem/distro-app-next.lorient.iot/')
+	(
+		set -x
+		dnf --installroot /tmp/dnftmp --repofrompath r,$repo --repo r "$@"
+	)
+}

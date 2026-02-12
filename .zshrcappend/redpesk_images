@@ -1,0 +1,21 @@
+function rp_download_last_image {
+	local version=$1
+	local arch=$2
+	local bsp=$3
+	local variant=smack
+	[ -z "$arch" ] && arch=x86_64
+	[ -z "$bsp" ] && bsp=generic
+
+
+	local url="https://silo.redpesk.iot/redpesk/private/redpesk-lts/$version/private_images/$variant/minimal/$arch/$bsp"
+	echo "url=$url"
+	local lastdate=$(wget -q -O - $url | grep -oE "href=\"[0-9]{4}[_[0-9]+" | sed "s/href=\"//" | sort -r | head -n 1)
+
+	url="$url/$lastdate"
+	echo "urlwithlastdate=$url"
+	wget -q $url/image.raw.tar.xz && tar xf image.raw.tar.xz &
+	wget -q $url/initramfs.img &
+	wget -q $url/kernel.bin &
+
+	wait
+}
