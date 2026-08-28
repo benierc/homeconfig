@@ -95,9 +95,9 @@ function entermockhub {
 	ssh -t $sshdomain runuser -u kojibuilder -- mock -r koji/$mockname --shell
 }
 
-function importpkgs {
+function _importpkgs {
+	local rocky=$1; shift
 	local rhelver=$1; shift
-	local importtag=$1; shift
 	local pkgs=$@
 
 	mkdir -p rpms
@@ -106,10 +106,20 @@ function importpkgs {
 	for pkg in $(echo $pkgs); do
 		pkg=$(echo $pkg | sed "s/---/ /g")
 		echo "pkg=$pkg"
-		importfromrocky $rhelver $pkg $rpmdir
+		if [[ $rocky -eq 1 ]]; then
+			importfromrocky $rhelver $pkg $rpmdir
+		else
+			importfromfedora $rhelver $pkg $rpmdir
+		fi
 	done
+}
 
-	kojidn_importrpmstag $importtag
+function importpkgs {
+	_importpkgs 1 $@
+}
+
+function importpkgsepel {
+	_importpkgs 0 $@
 }
 
 function importfromrootlog {
@@ -122,6 +132,16 @@ function importfromrootlog {
 	local listpkgs=$(cat root.log | grep "${rhelversuf}" | awk '{print $3}' | sed -r "s#-[^-]+-[^-]+${rhelversuf}[^-]+\$##" | uniq | sort -u)
 
 	importpkgs $rhelver $importtag $listpkgs
+}
+
+function importfromnothing {
+	local rocky=$1
+	local file=$2
+	local rhelver=$3
+	local importtag=$4
+
+	listpkgs=$(cat $file | grep "nothing provides" | awk '{print $4}')
+	_importpkgs $rocky $rhelver $importtag $listpkgs
 }
 
 function importfromunresolvable {
@@ -198,4 +218,85 @@ function yad_kojidn_cancels {
 
 	kill $_pid
 	rm -f $tmpfile
+}
+
+function scprpm {
+	local srpm=$1
+	local pkg=$(echo $srpm | sed -r "s/-[^-]+-[^-]+$//")
+	local versionrelease=$(echo $srpm | sed -r "s/^$pkg//" | sed -r )
+	 scp -r root@distro-prod02-kojihub:/mnt/koji/packages/cross-profile-setup/5.6.1/2.redpesk.toolchain.rpcorn/noarch .
+}
+
+function look_pkg_in_distro {
+	local redpeskver=$1
+	local pkg=$2
+	local repokojidistro="http://distro-app-next.lorient.iot/kojifiles/repos/import-redpesk-lts-${redpeskver}-update-build/latest/x86_64"
+	find=$(dnf -q --installroot /tmp/dnftmp$redpeskver --repofrompath r,$repokojidistro --repo r repoquery --whatprovides $pkg)
+	[ -z "$find" ] && return 1
+	return 0
+}
+
+function download_pkg {
+	local rhelver=$1
+	local redpeskver=$2
+	local pkg=$3
+	echo
+	echo "pkg=$pkg ..."
+
+	local koji_rocky_tag=import-$redpeskver-rocky-update-release
+	local koji_epel_tag=import-$redpeskver-epel-update-release
+
+	local epel=0
+	local srpm=$(dnfsilo $rhelver -q repoquery --whatprovides $pkg --qf '%{sourcerpm}')
+	[ -z "$srpm" ] && srpm=$(dnfepel $rhelver -q repoquery --whatprovides $pkg --qf '%{sourcerpm}') && epel=1
+
+	[ -z "$srpm" ] && echo "srpm for $rhelver $pkg" && continue
+
+	local koji=
+	local kojitag=
+	if [ $epel -eq 0 ]; then
+		koji="https://koji.rockylinux.org/koji/search?match=glob&type=build&terms="
+		kojitag=$koji_rocky_tag
+	else
+		koji="https://koji.fedoraproject.org/koji/search?match=glob&type=build&terms="
+		kojitag=$koji_epel_tag
+	fi
+
+	local buildid=${srpm::-8}
+	local kojibuild="${koji}$(echo ${buildid} | jq -sRr @uri)"
+	local srpmurl=$(wget -q -O - $kojibuild | grep -o "href=\"http.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
+
+	local downloadurl=$(dirname $(dirname $srpmurl))
+	echo "$downloadurl"
+
+	(
+		mkdir -p tmp/rpms-$buildid
+		cd tmp/rpms-$buildid
+		downloadrpmfromexternalkoji "$downloadurl" noarch x86_64 aarch64
+		kojidn_importrpmstag $kojitag
+
+		# check require exist in koji
+		echo "looking for missing requires for $buildid"
+		local rpmslist=$(ls *.rpm | grep -E "noarch|x86_64")
+		local provides=$(rpm -qp --provides $(echo $rpmslist))
+
+		IFS=$'\n'; for require in $(rpm -qp --requires $(echo $rpmslist) | sort | uniq | grep -v rpmlib\(); do
+			look_pkg_in_distro $redpeskver $require && continue
+
+			# check if require is in provides
+			echo $require | grep -q $provides && continue
+			echo "missing require=$require"
+			download_pkg $rhelver $redpeskver "$require"
+		done
+
+	)
+}
+
+function import_from_nothing_provides {
+	local rhelver=$1
+	local redpeskver=$2
+
+	for pkg in $(cat $file | grep "nothing provides" | awk '{print $4}'); do
+		download_pkg $rhelver $redpeskver $pkg
+	done
 }

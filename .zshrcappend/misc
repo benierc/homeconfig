@@ -9,6 +9,8 @@ alias fzfspace='tr " " "\n" | fzf'
 
 alias manfr='man --locale=fr'
 
+alias dnf='dnf5'
+
 function logcmd {
 	print "> $*" >&2
 	command "$*"
@@ -115,7 +117,7 @@ function downloadrpmfromexternalkoji {
 	url=$1; shift
 	arches=$@
 	for arch in $(echo $arches); do
-		for rpm in $(wget -qO- $url/$arch | grep -Eo ">(\w|\+|-|\.)+.rpm" | sed "s/>//"); do
+		for rpm in $(wget -qO- $url/$arch | grep -Eo ">(\w|\+|-|\.|\^|~)+.rpm" | sed "s/>//"); do
 			[ -f $rpm ] && echo "$rpm exist, no redownload" && continue
 			echo "$rpm"
 			echo "wget -q $url/$arch/$rpm"
@@ -149,31 +151,68 @@ function dnfsilo {
 	dnf ${dnfopts[@]} $@
 }
 
-function importfromrocky {
-	mkdir -p /tmp/rockydownloads
-	d=$(mktemp -d -p /tmp/rockydownloads)
+function dnfepel {
+	local rhelver=$1; shift
+	local vermajor=${rhelver%%.*}
+	local url="https://mirror.de.leaseweb.net/epel/$vermajor/Everything/x86_64"
+	local installroot=/tmp/dnfepel/epel-$vermajor-$rhelver
+	mkdir -p $installroot
+
+	local dnfopts=(--installroot=${installroot})
+	dnfopts+="--repofrompath=epel,$url/$repo"
+	dnfopts+="--repo=epel"
+
+	#logcmd dnf ${dnfopts[@]} $@
+	dnf ${dnfopts[@]} $@
+}
+
+function importfrom {
+	mkdir -p /tmp/downloads
+	d=$(mktemp -d -p /tmp/downloads)
 	echo $d
 	cd $d
 
-	local kojirocky="https://koji.rockylinux.org/koji/search?match=glob&type=build&terms="
-	local rhelver=$1
-	local search=$2
+	local rocky=$1
+	local rhelver=$2
+	local search=$3
+
+	local koji=""
+	if [ $rocky -eq 1 ]; then
+		koji="https://koji.rockylinux.org/koji/search?match=glob&type=build&terms="
+	else
+		koji="https://koji.fedoraproject.org/koji/search?match=glob&type=build&terms="
+	fi
+
 	# optionnal
-	local dest=$3
+	local dest=$4
 	[ "$dest" ] && cd $dest
 
-	local buildid=$(dnfsilo $rhelver download --source --url "$search" | tail -n 1 | awk -F '/' '{print $NF}' | sed "s/.src.rpm$//")
+	local buildid=
+	if [ $rocky -eq 1 ]; then
+		buildid=$(dnfsilo $rhelver repoquery --whatprovides $search --qf '%{sourcerpm}' | tail -n 1 |sed "s/.src.rpm$//")
+	else
+		buildid=$(dnfepel $rhelver repoquery --whatprovides $search --qf '%{sourcerpm}' | tail -n 1 | awk -F '/' '{print $NF}' | sed "s/.src.rpm$//")
+	fi
+
 
 	[ -z "${buildid}" ] && echo "no buildid found for $search" && return 1
 
-	local kojirockybuild="${kojirocky}$(echo ${buildid} | jq -sRr @uri)"
+	local kojibuild="${koji}$(echo ${buildid} | jq -sRr @uri)"
 
-	echo "$kojirockybuild"
+	echo "$kojibuild"
 
-	local srpmurl=$(wget -q -O - $kojirockybuild | grep -o "href=\"http.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
+	local srpmurl=$(wget -q -O - $kojibuild | grep -o "href=\"http.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
 
 	local downloadurl=$(dirname $(dirname $srpmurl))
 	echo "$downloadurl"
 
 	downloadrpmfromexternalkoji $downloadurl src noarch x86_64 aarch64
+}
+
+function importfromrocky {
+	importfrom 1 $@
+}
+
+function importfromfedora {
+	importfrom 0 $@
 }
