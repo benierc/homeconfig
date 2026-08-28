@@ -230,8 +230,7 @@ function scprpm {
 function look_pkg_in_distro {
 	local redpeskver=$1
 	local pkg=$2
-	local repokojidistro="http://distro-app-next.lorient.iot/kojifiles/repos/import-redpesk-lts-${redpeskver}-update-build/latest/x86_64"
-	find=$(dnf -q --installroot /tmp/dnftmp$redpeskver --repofrompath r,$repokojidistro --repo r repoquery --whatprovides $pkg)
+	find=$(dnfdistro $redpeskver -q repoquery --whatprovides $pkg)
 	[ -z "$find" ] && return 1
 	return 0
 }

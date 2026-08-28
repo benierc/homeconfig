@@ -159,8 +159,20 @@ function dnfepel {
 	mkdir -p $installroot
 
 	local dnfopts=(--installroot=${installroot})
-	dnfopts+="--repofrompath=epel,$url/$repo"
+	dnfopts+="--repofrompath=epel,$url"
 	dnfopts+="--repo=epel"
+
+	#logcmd dnf ${dnfopts[@]} $@
+	dnf ${dnfopts[@]} $@
+}
+
+function dnfdistro {
+	local redpeskver=$1; shift
+	local url="http://distro-app-next.lorient.iot/kojifiles/repos/import-redpesk-lts-${redpeskver}-update-build/latest/x86_64"
+
+	local dnfopts=(--installroot=/tmp/dnftmp/distro-$redpeskver)
+	dnfopts+="--repofrompath=distro,$url"
+	dnfopts+="--repo=distro"
 
 	#logcmd dnf ${dnfopts[@]} $@
 	dnf ${dnfopts[@]} $@
