@@ -43,16 +43,23 @@ alias kojif='koji -c ~/.kojif/config-clement'
 alias kojidn='koji -c ~/.kojidn/config'
 
 function kojidn_importrpmstag {
+	local kojitag=$1
 	local buildids=
 	local pkgname=
+
+	if rpm -qip * | grep Signature | awk '{print $3}' | grep none; then
+		echo "no signature: try to sign rpms"
+		rpm --addsign *.rpm
+	fi
 
 	kojidn import --create-build *.rpm
 	buildids=$(rpm -qp --qf '%{SOURCERPM}\n' *.rpm | grep -v "(none)" | uniq | sed 's/\.src\.rpm$//g')
 	for buildid in $(echo $buildids); do
 		local pkgname=$(echo $buildid | sed -r "s/-[^-]+-[^-]+$//")
 		ssh root@distro-prod02-kojihub "runuser -u kojiadmin -- koji add-pkg --owner=clement $1 ${pkgname}"
-		kojidn tag-build --nowait $1 $buildid
+		kojidn tag-build --nowait $kojitag $buildid
 	done
+	kojidn call newRepo $kojitag
 }
 
 function kojidn_reset {
@@ -239,6 +246,7 @@ function download_pkg {
 	local rhelver=$1
 	local redpeskver=$2
 	local pkg=$3
+	local parent=$4
 	echo
 	echo "pkg=$pkg ..."
 
@@ -246,36 +254,41 @@ function download_pkg {
 	local koji_epel_tag=import-$redpeskver-epel-update-release
 
 	local epel=0
-	local srpm=$(dnfsilo $rhelver -q repoquery --whatprovides $pkg --qf '%{sourcerpm}')
-	[ -z "$srpm" ] && srpm=$(dnfepel $rhelver -q repoquery --whatprovides $pkg --qf '%{sourcerpm}') && epel=1
+	local srpm=$(dnfsilo $rhelver -q repoquery --latest-limit=1 --whatprovides "$pkg" --qf '%{sourcerpm}')
+	[ -z "$srpm" ] && srpm=$(dnfrocky $rhelver -q repoquery --latest-limit=1 --whatprovides "$pkg" --qf '%{sourcerpm}')
+	[ -z "$srpm" ] && srpm=$(dnfepel $rhelver -q repoquery --latest-limit=1 --whatprovides "$pkg" --qf '%{sourcerpm}') && epel=1
 
-	[ -z "$srpm" ] && echo "srpm for $rhelver $pkg" && continue
+	[ -z "$srpm" ] && echo "No srpm for $rhelver $pkg" && return
+	[[ "$srpm" == "$parent" ]] && echo "Same as parent srpm=$parent dont redo" && return
 
 	local koji=
 	local kojitag=
+	local kojifiles=
 	if [ $epel -eq 0 ]; then
-		koji="https://koji.rockylinux.org/koji/search?match=glob&type=build&terms="
+		koji="https://koji.rockylinux.org"
+		kojifiles=$koji/kojifiles
 		kojitag=$koji_rocky_tag
 	else
-		koji="https://koji.fedoraproject.org/koji/search?match=glob&type=build&terms="
+		koji="https://koji.fedoraproject.org"
+		kojifiles="https://kojipkgs.fedoraproject.org"
 		kojitag=$koji_epel_tag
 	fi
 
-	local buildid=${srpm::-8}
-	local kojibuild="${koji}$(echo ${buildid} | jq -sRr @uri)"
-	local srpmurl=$(wget -q -O - $kojibuild | grep -o "href=\"http.*.src.rpm" | sed -r "s#.*(https://.*.src.rpm).*#\1#")
+	local srpmurl=$(koji --topdir $kojifiles -s $koji/kojihub --noauth rpminfo $srpm | grep "SRPM Path" | awk '{print $3}')
+	[ -z "$srpmurl" ] && echo "issue srpmurl empty for $srpm" && return 1
 
 	local downloadurl=$(dirname $(dirname $srpmurl))
-	echo "$downloadurl"
+	echo "downloadurl=$downloadurl"
+
 
 	(
-		mkdir -p tmp/rpms-$buildid
-		cd tmp/rpms-$buildid
+		mkdir -p tmp/rpms-$srpm
+		cd tmp/rpms-$srpm
 		downloadrpmfromexternalkoji "$downloadurl" noarch x86_64 aarch64
 		kojidn_importrpmstag $kojitag
 
 		# check require exist in koji
-		echo "looking for missing requires for $buildid"
+		echo "looking for missing requires for $srpm"
 		local rpmslist=$(ls *.rpm | grep -E "noarch|x86_64")
 		local provides=$(rpm -qp --provides $(echo $rpmslist))
 
@@ -285,10 +298,19 @@ function download_pkg {
 			# check if require is in provides
 			echo $require | grep -q $provides && continue
 			echo "missing require=$require"
-			download_pkg $rhelver $redpeskver "$require"
+			download_pkg $rhelver $redpeskver "$require" "$srpm"
 		done
 
 	)
+}
+
+function download_pkgs_from_url {
+	local rhelver=$1
+	local redpeskver=$2
+	local url=$3
+	for pkg in $(curl -s $url | grep -oE 'No matching package to install:.*' | awk '{print $NF}'); do
+		download_pkg $rhelver $redpeskver $pkg
+	done
 }
 
 function import_from_nothing_provides {

@@ -148,6 +148,21 @@ function dnfsilo {
 	done
 
 	#logcmd dnf ${dnfopts[@]} $@
+	dnf "${dnfopts[@]}" "$@"
+}
+
+function dnfrocky {
+	local rhelver=$1; shift
+	local vermajor=${rhelver%%.*}
+	local url="https://mirror.de.leaseweb.net/epel/$vermajor/Everything/x86_64"
+	local installroot=/tmp/dnfepel/epel-$vermajor-$rhelver
+	mkdir -p $installroot
+
+	local dnfopts=(--installroot=${installroot})
+	dnfopts+="--repofrompath=epel,$url"
+	dnfopts+="--repo=epel"
+
+	#logcmd dnf ${dnfopts[@]} $@
 	dnf ${dnfopts[@]} $@
 }
 
@@ -161,6 +176,19 @@ function dnfepel {
 	local dnfopts=(--installroot=${installroot})
 	dnfopts+="--repofrompath=epel,$url"
 	dnfopts+="--repo=epel"
+
+	#logcmd dnf ${dnfopts[@]} $@
+	dnf ${dnfopts[@]} $@
+}
+
+function dnfrocky {
+	local rhelver=$1; shift
+	local vermajor=${rhelver%%.*}
+	local url="https://kojihub.stream.centos.org/kojifiles/repos/c${vermajor}s-build/latest/x86_64"
+
+	local dnfopts=(--installroot=/tmp/dnftmp/rocky-$redpeskver)
+	dnfopts+="--repofrompath=rocky,$url"
+	dnfopts+="--repo=rocky"
 
 	#logcmd dnf ${dnfopts[@]} $@
 	dnf ${dnfopts[@]} $@
