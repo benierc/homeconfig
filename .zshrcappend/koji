@@ -154,7 +154,8 @@ function importfromnothing {
 function importfromunresolvable {
 	local rhelver=$1
 	local importtag=$2
-	local unr_string="$3"
+	shift 2
+	local unr_string="$@"
 	local unr_string_fixed=$(echo $unr_string | sed -r 's/Unresolvable: //'| sed 's/ (code: -1)//' |  sed -r 's/, /,/g'  | sed -r 's/ /---/g' | sed 's/,/ /g')
 
 	importpkgs $rhelver $importtag "$unr_string_fixed"
@@ -313,11 +314,24 @@ function download_pkgs_from_url {
 	done
 }
 
-function import_from_nothing_provides {
+function download_pkgs_from_nothing_provides {
 	local rhelver=$1
 	local redpeskver=$2
 
 	for pkg in $(cat $file | grep "nothing provides" | awk '{print $4}'); do
+		download_pkg $rhelver $redpeskver $pkg
+	done
+}
+
+function download_pkgs_from_unresolvable {
+	local rhelver=$1
+	local redpeskver=$2
+	shift 2
+	local unr_string="$@"
+	local unr_string_fixed=$(echo $unr_string | sed -r 's/Unresolvable: //'| sed 's/ (code: -1)//' |  sed -r 's/, /,/g'  | sed -r 's/ /---/g' | sed 's/,/ /g')
+
+	for pkg in $(echo $unr_string_fixed); do
+		echo "download_pkg $rhelver $redpeskver $pkg"
 		download_pkg $rhelver $redpeskver $pkg
 	done
 }
